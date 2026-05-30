@@ -1,21 +1,17 @@
 "use client"
 
 // ─── CategoriesStrip.tsx ───────────────────────────────────────────────────────
-// Responsive grid of the 4 main part categories.
+// Responsive grid of the 4 main part categories with high-end card designs.
+// Uses real photographic backgrounds left in the public/ folder.
 //
 // RESPONSIVE STRATEGY (Mobile-First per responsive-design skill):
 //   • Base (mobile):  grid-cols-2  → 2×2 compact grid, touch-friendly cards
-//   • md+  (tablet):  grid-cols-4  → single horizontal row, full icons visible
+//   • md+  (tablet):  grid-cols-4  → single horizontal row, full images visible
 //
 // INTERACTION DESIGN:
-//   • Active category gets a colored accent ring (300ms ease-out transition)
-//   • Hover: subtle scale(1.02) + border brighten (200ms)
+//   • Active category gets a bright amber border and ambient glow shadow
+//   • Hover: parallax image scale(1.10) + card scale(1.03) + sutil "Explorar" prompt fade-in
 //   • Active tap: scale(0.98) via active:scale-[0.98]
-//
-// UI ENGINEERING:
-//   • Touch targets: entire card is the button (min-h-[88px] on mobile)
-//   • No fixed widths — w-full via grid cell
-//   • Icon container: aspect-square prevents layout shift
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { MAIN_CATEGORY_META, type CategoryMeta } from "@/lib/data"
@@ -37,23 +33,28 @@ export default function CategoriesStrip({
   return (
     <section
       aria-labelledby="categories-strip-heading"
-      className={cn("bg-[#121212] py-12 px-4 md:px-8", className)}
+      className={cn("bg-[#090b0e] py-16 px-4 md:px-8 border-t border-[#121620]", className)}
     >
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
-        <div className="flex items-center justify-between mb-6 md:mb-8">
-          <h2
-            id="categories-strip-heading"
-            className="text-xl md:text-2xl lg:text-3xl font-black text-white tracking-tight"
-          >
-            Categorías Principales
-          </h2>
+        <div className="flex items-center justify-between mb-8 md:mb-10">
+          <div className="flex flex-col gap-1">
+            <h2
+              id="categories-strip-heading"
+              className="text-xl md:text-2xl lg:text-3xl font-black text-white tracking-tight uppercase"
+            >
+              Categorías Principales
+            </h2>
+            <p className="text-zinc-500 text-xs md:text-sm font-medium tracking-wide">
+              Selecciona una categoría para filtrar los repuestos disponibles
+            </p>
+          </div>
 
           {activeCategory && (
             <button
               onClick={() => onSelectCategory(null)}
-              className="text-zinc-400 text-sm font-medium hover:text-white transition-colors duration-150 flex items-center gap-1"
-              aria-label="Limpiar filtro de categoría"
+              className="text-zinc-400 text-sm font-semibold hover:text-white transition-colors duration-150 flex items-center gap-1.5 bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded-xl cursor-pointer hover:bg-zinc-800/80 active:scale-95"
+              aria-label="Limpiar filtro de categoría y ver todos los repuestos"
             >
               Ver todo
               <span aria-hidden="true"> →</span>
@@ -62,7 +63,7 @@ export default function CategoriesStrip({
           {!activeCategory && (
             <a
               href="/catalogo"
-              className="text-zinc-400 text-sm font-medium hover:text-white transition-colors duration-150"
+              className="text-zinc-400 text-sm font-semibold hover:text-white transition-colors duration-150 flex items-center gap-1.5 bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded-xl hover:bg-zinc-800/80 active:scale-95"
               aria-label="Ir al catálogo completo"
             >
               Ver todo →
@@ -74,12 +75,11 @@ export default function CategoriesStrip({
           GRID LAYOUT — Mobile-First:
           • mobile:  grid-cols-2          → 2 × 2
           • md+:     grid-cols-4          → 1 × 4 row
-          Gap scales up slightly on larger screens for breathing room.
         */}
         <div
           role="group"
           aria-label="Filtrar por categoría"
-          className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4"
+          className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-5"
         >
           {MAIN_CATEGORY_META.map((cat) => (
             <CategoryCard
@@ -96,7 +96,7 @@ export default function CategoriesStrip({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CategoryCard — individual button cell
+// CategoryCard — individual button cell with premium photo-background hover zooms
 // ─────────────────────────────────────────────────────────────────────────────
 
 function CategoryCard({
@@ -109,6 +109,16 @@ function CategoryCard({
   onSelect: (label: string | null) => void
 }) {
   const Icon = category.icon
+
+  // Map category IDs to their specific image paths inside the public folder
+  const imageMap: Record<string, string> = {
+    motor: "/motor.jpg",
+    frenos: "/frenos.jpg",
+    suspension: "/suspension.jpg",
+    electrico: "/electrico.jpg",
+  }
+
+  const bgImage = imageMap[category.id] || "/placeholder.jpg"
 
   const handleClick = () => {
     onSelect(isActive ? null : category.label)
@@ -123,87 +133,86 @@ function CategoryCard({
       onClick={handleClick}
       aria-pressed={isActive}
       aria-label={`Filtrar por ${category.label}${isActive ? " — activo" : ""}`}
-      /*
-        Touch target: min-h-[88px] on mobile ensures thumb comfort far above the
-        44px WCAG minimum. On md+ screens the card grows naturally with padding.
-
-        Transition: 200ms ease-out for micro-feedback (per interaction-design skill).
-        No width/height animation — only transform + border + shadow (GPU-friendly).
-      */
       className={cn(
-        // Base layout — flex-col so icon sits above text
-        "relative flex flex-col items-center justify-center gap-3 p-5",
-        // Minimum height ensures thumb target ≥ 44px, gives visual weight on mobile
-        "min-h-[88px] md:min-h-[100px]",
+        // Base layout
+        "group relative flex flex-col items-center justify-center p-6 text-center overflow-hidden w-full",
+        // Taller height targets for high-end photographic layout
+        "min-h-[130px] sm:min-h-[145px] md:min-h-[160px] lg:min-h-[185px]",
         // Structural
-        "rounded-2xl border w-full",
-        // GPU-friendly transitions — no width/height/top/left
-        "transition-all duration-200 ease-out",
-        // Hover (desktop) - only when NOT active
-        "hover:scale-[1.02] hover:-translate-y-0.5",
+        "rounded-2xl border",
+        // GPU-friendly transitions
+        "transition-all duration-300 ease-out",
+        // Hover effects - scale and elevate
+        "hover:scale-[1.03] hover:-translate-y-1 hover:shadow-2xl hover:shadow-amber-500/5",
         // Active tap feedback
         "active:scale-[0.98] active:translate-y-0",
         // Cursor
         "cursor-pointer select-none",
-        // State: inactive
-        !isActive && "bg-zinc-900/50 border-zinc-800/80 hover:border-zinc-700 hover:bg-zinc-900/80",
-        // State: active — elevated card with colored border glow
-        isActive && "bg-zinc-800/60 border-zinc-600 shadow-[0_4px_24px_rgba(0,0,0,0.35)]"
+        // Active/Inactive state styles
+        !isActive 
+          ? "border-zinc-800 bg-zinc-950" 
+          : "border-amber-500 shadow-[0_4px_30px_rgba(245,158,11,0.18)]"
       )}
     >
-      {/*
-        Active indicator dot — top-right corner
-        16px dot with animate-ping pulse; only renders when category is active.
-        Absolutely positioned so it doesn't affect card flex layout.
-      */}
+      {/* ── Background Image with group-hover parallax zoom ── */}
+      <div
+        className="absolute inset-0 z-0 bg-cover bg-center transition-transform duration-700 ease-out scale-100 group-hover:scale-110"
+        style={{ backgroundImage: `url(${bgImage})` }}
+      />
+
+      {/* ── Dark gradient overlay for text readability & premium styling ── */}
+      <div
+        className={cn(
+          "absolute inset-0 z-10 transition-colors duration-300",
+          !isActive
+            ? "bg-gradient-to-t from-zinc-950 via-zinc-950/70 to-zinc-900/30 group-hover:from-zinc-950 group-hover:via-zinc-950/60"
+            : "bg-gradient-to-t from-zinc-950 via-zinc-950/65 to-amber-950/20"
+        )}
+      />
+
+      {/* ── Active top-right corner indicator dot ── */}
       {isActive && (
-        <span className="absolute top-2.5 right-2.5 flex h-2 w-2" aria-hidden="true">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-40" />
-          <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
+        <span className="absolute top-3 right-3 z-30 flex h-2 w-2" aria-hidden="true">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
         </span>
       )}
 
-      {/*
-        Icon container — aspect-square prevents CLS if icon lazy-loads.
-        The colored accent ring comes from category.accentClass.
-        Size: w-12 h-12 on mobile / w-14 h-14 on md+ (via responsive classes).
-      */}
-      <div
-        aria-hidden="true"
-        className={cn(
-          "w-12 h-12 md:w-14 md:h-14",
-          "flex items-center justify-center",
-          "rounded-xl border",
-          // Transition icon container background too
-          "transition-colors duration-200",
-          // Inactive hover
-          !isActive && "bg-zinc-800 group-hover:bg-zinc-700/80",
-          // Active state — use category accent color
-          isActive && category.accentClass,
-          // When inactive, still show a neutral icon
-          !isActive && "border-zinc-700/60"
-        )}
-      >
-        <Icon
+      {/* ── Content container (lifted above background) ── */}
+      <div className="relative z-20 flex flex-col items-center gap-3">
+        {/* Lucide Icon with glassmorphic backing */}
+        <div
+          aria-hidden="true"
           className={cn(
-            "w-6 h-6 md:w-7 md:h-7",
-            "transition-colors duration-200",
-            isActive ? "text-white" : "text-zinc-300"
+            "w-11 h-11 md:w-13 md:h-13",
+            "flex items-center justify-center",
+            "rounded-xl border backdrop-blur-md transition-all duration-300",
+            !isActive
+              ? "bg-zinc-950/60 border-zinc-700/50 group-hover:border-zinc-500 group-hover:bg-zinc-900/70 text-zinc-300 group-hover:text-white"
+              : "bg-amber-500/20 border-amber-400/50 text-amber-400"
           )}
-          strokeWidth={1.75}
-        />
-      </div>
+        >
+          <Icon
+            className="w-5 md:w-6 h-5 md:h-6 transition-transform duration-300 group-hover:rotate-6"
+            strokeWidth={2}
+          />
+        </div>
 
-      {/* Label */}
-      <span
-        className={cn(
-          "font-semibold text-sm md:text-base leading-tight",
-          "transition-colors duration-200",
-          isActive ? "text-white" : "text-zinc-300"
-        )}
-      >
-        {category.label}
-      </span>
+        {/* Category Label and prompt */}
+        <div className="flex flex-col items-center">
+          <span
+            className={cn(
+              "font-bold text-sm md:text-base tracking-wider uppercase transition-colors duration-300",
+              isActive ? "text-amber-400" : "text-zinc-100 group-hover:text-white"
+            )}
+          >
+            {category.label}
+          </span>
+          <span className="text-[9px] text-amber-400/90 font-bold tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-opacity duration-300 mt-1">
+            Explorar →
+          </span>
+        </div>
+      </div>
     </button>
   )
 }

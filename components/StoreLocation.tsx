@@ -1,3 +1,5 @@
+"use client"
+
 // ─── StoreLocation Component ──────────────────────────────────────────────────
 // Local SEO Powerhouse for Automotriz El Shaddai
 // Rationale:
@@ -9,12 +11,19 @@
 //     destroys friction, converting browsing traffic into direct local leads.
 //   • Dark-Theme Maps Hack: Google Maps iframe is visually converted to dark mode
 //     using standard CSS filters, maintaining high-end consistent aesthetics.
+//   • Scroll Trap Prevention: Touch-activation overlay on mobile prevents the map
+//     iframe from hijacking the user's vertical scroll gesture.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { useState } from "react"
 import { MapPin, Clock, MessageCircle } from "lucide-react"
 import { BUSINESS, buildWhatsAppURL } from "@/lib/config"
 
 export default function StoreLocation() {
+  // Scroll Trap Prevention: tracks whether the user has explicitly unlocked
+  // the map on mobile. Starts locked (false) — overlay prevents accidental scroll capture.
+  const [mapUnlocked, setMapUnlocked] = useState(false)
+
   const whatsappMessage = "¡Hola! Quisiera recibir asesoría inmediata y confirmar la dirección física de la tienda en Charallave."
   const whatsappUrl = buildWhatsAppURL(whatsappMessage)
 
@@ -152,7 +161,24 @@ export default function StoreLocation() {
             </div>
           </div>
 
-          {/* Columna Derecha (Mapa Google Maps) */}
+          {/* Columna Derecha (Mapa Google Maps) — con prevención de Scroll Trap */}
+          {/*
+            INTERACTION DESIGN — Scroll Trap Prevention:
+            On mobile, an <iframe> map intercepts ALL touch events — including the
+            vertical scroll gesture. The moment a user's finger lands on the map,
+            their scroll is hijacked and they can no longer leave the map area
+            without using two fingers or tapping outside.
+
+            PATTERN APPLIED: "Activation Overlay"
+              1. A semi-opaque overlay sits above the iframe by default on mobile.
+              2. The overlay swallows all touch events (pointer-events-auto).
+              3. A single "Desbloquear mapa" tap removes the overlay.
+              4. On desktop (mouse/trackpad) the map is always fully interactive —
+                 pointer lock is not an issue with a cursor device.
+
+            This is equivalent to Google Maps' own "Use Ctrl+Scroll to zoom the map"
+            pattern, adapted for the touch-swipe paradigm.
+          */}
           <div className="relative h-[350px] lg:h-auto min-h-[350px] bg-[var(--surface-card,#141414)] rounded-2xl border border-[var(--surface-border,#27272a)] overflow-hidden shadow-[0_4px_30px_rgba(0,0,0,0.4)] transition-all duration-300 hover:border-zinc-700 group">
             {/* Dark Mode Google Map Iframe */}
             <iframe
@@ -170,6 +196,45 @@ export default function StoreLocation() {
               title="Ubicación de Automotriz El Shaddai en Google Maps"
             />
             
+            {/*
+              Touch Blocker Overlay (mobile only).
+              • Visible by default on touch devices via md:hidden.
+              • Disappears after user explicitly taps "Desbloquear mapa".
+              • On desktop (md+) always pointer-events-none and invisible.
+              • Uses a dark glassmorphic layer so the map is still visible
+                behind it — user knows what they're activating.
+            */}
+            {!mapUnlocked && (
+              <div
+                className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 cursor-pointer md:hidden"
+                style={{ background: "rgba(10,10,10,0.65)", backdropFilter: "blur(2px)" }}
+                onClick={() => setMapUnlocked(true)}
+                aria-label="Activar el mapa interactivo"
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === "Enter" && setMapUnlocked(true)}
+              >
+                {/* Padlock icon */}
+                <div className="w-14 h-14 rounded-2xl bg-zinc-900/90 border border-zinc-700/60 flex items-center justify-center shadow-lg">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-7 h-7 text-amber-400" aria-hidden="true">
+                    <rect x="5" y="11" width="14" height="10" rx="2" ry="2" />
+                    <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                  </svg>
+                </div>
+                <div className="text-center px-4">
+                  <p className="text-white text-sm font-bold leading-tight">Toca para activar el mapa</p>
+                  <p className="text-zinc-400 text-xs mt-1 leading-snug">Usa dos dedos para desplazarte sin activar el mapa</p>
+                </div>
+                <button
+                  className="mt-1 px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-sm font-bold transition-colors min-h-[44px] shadow-[0_4px_16px_rgba(217,119,6,0.35)]"
+                  onClick={(e) => { e.stopPropagation(); setMapUnlocked(true); }}
+                  aria-label="Desbloquear mapa interactivo"
+                >
+                  🗺️ Desbloquear mapa
+                </button>
+              </div>
+            )}
+
             {/* Glassmorphic Map Control Indicator Overlay */}
             <div className="absolute bottom-4 left-4 right-4 bg-black/60 backdrop-blur-md border border-zinc-800/80 rounded-xl p-3 flex items-center justify-between pointer-events-none transition-all duration-300 group-hover:-translate-y-1">
               <div className="flex items-center gap-2">

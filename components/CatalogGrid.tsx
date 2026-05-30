@@ -140,18 +140,22 @@ export default function CatalogGrid({
           The grid is the layout authority — not the card.
         */}
         {displayProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
+          <div className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:grid md:grid-cols-3 lg:grid-cols-4 md:overflow-visible md:pb-0 md:gap-5">
             {displayProducts.map((product) => {
               const quoteItem = quoteItems.find((i) => i.id === product.id)
               return (
-                <ProductCard
+                <div
                   key={product.id}
-                  product={product}
-                  quantityInList={quoteItem?.quantity ?? 0}
-                  onAdd={() => onAddToQuote(product)}
-                  onRemove={() => onRemoveFromQuote(product.id)}
-                  onUpdateQuantity={(delta) => onUpdateQuantity(product.id, delta)}
-                />
+                  className="w-[85vw] sm:w-[45vw] flex-shrink-0 snap-center md:w-auto md:shrink"
+                >
+                  <ProductCard
+                    product={product}
+                    quantityInList={quoteItem?.quantity ?? 0}
+                    onAdd={() => onAddToQuote(product)}
+                    onRemove={() => onRemoveFromQuote(product.id)}
+                    onUpdateQuantity={(delta) => onUpdateQuantity(product.id, delta)}
+                  />
+                </div>
               )
             })}
           </div>

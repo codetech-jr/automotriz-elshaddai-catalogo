@@ -11,7 +11,8 @@
 //     lead generation for users who only want to consult about a single part.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
+import { useSearchParams } from "next/navigation"
 import {
   Wrench,
   MessageCircle,
@@ -25,6 +26,7 @@ import {
   CheckCircle,
   Search,
   ListPlus,
+  ChevronDown,
 } from "lucide-react"
 import {
   BUSINESS,
@@ -38,6 +40,223 @@ import {
 } from "@/lib/config"
 import { useQuoteStore } from "@/lib/quote-store"
 import FloatingQuoteBar from "@/components/FloatingQuoteBar"
+
+// ─── YMM Data ─────────────────────────────────────────────────────────────────
+const YMM_DATA: Record<string, Record<string, string[]>> = {
+  Chery: {
+    Arauco:      ["2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022"],
+    Tiggo3:     ["2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021"],
+    "Tiggo 7":  ["2018", "2019", "2020", "2021", "2022", "2023"],
+    "Orinoco":  ["2013", "2014", "2015", "2016", "2017"],
+  },
+  Toyota: {
+    Corolla:    ["2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020"],
+    Fortuner:   ["2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023"],
+    "Hilux":    ["2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018"],
+    "Land Cruiser": ["2010", "2012", "2014", "2016", "2018", "2020"],
+  },
+  Ford: {
+    Explorer:   ["2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023"],
+    Escape:     ["2013", "2014", "2015", "2016", "2017", "2018", "2019"],
+    "F-150":    ["2015", "2016", "2017", "2018", "2019", "2020"],
+    Fiesta:     ["2011", "2012", "2013", "2014", "2015", "2016"],
+  },
+  Chevrolet: {
+    Aveo:       ["2009", "2010", "2011", "2012", "2013", "2014", "2015"],
+    Optra:      ["2005", "2006", "2007", "2008", "2009", "2010"],
+    Spark:      ["2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020"],
+    Captiva:    ["2012", "2013", "2014", "2015", "2016", "2017"],
+  },
+  Volkswagen: {
+    Gol:        ["2010", "2011", "2012", "2013", "2014", "2015", "2016"],
+    Jetta:      ["2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018"],
+    Tiguan:     ["2016", "2017", "2018", "2019", "2020", "2021"],
+    Polo:       ["2014", "2015", "2016", "2017", "2018"],
+  },
+  Hyundai: {
+    Tucson:     ["2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020"],
+    "Santa Fe": ["2013", "2014", "2015", "2016", "2017", "2018"],
+    Accent:     ["2012", "2013", "2014", "2015", "2016", "2017"],
+    Elantra:    ["2011", "2012", "2013", "2014", "2015", "2016", "2017"],
+  },
+}
+
+// ─── SelectDropdown Component ──────────────────────────────────────────────────
+interface SelectDropdownProps {
+  id: string
+  label: string
+  value: string
+  options: string[]
+  onChange: (val: string) => void
+  placeholder: string
+  disabled?: boolean
+}
+
+function SelectDropdown({ id, label, value, options, onChange, placeholder, disabled = false }: SelectDropdownProps) {
+  return (
+    <div className="flex flex-col gap-1.5 flex-1 min-w-0">
+      <label htmlFor={id} className="text-xs font-bold uppercase tracking-widest text-zinc-500 select-none">
+        {label}
+      </label>
+      <div className="relative">
+        <select
+          id={id}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          disabled={disabled}
+          className={`
+            w-full appearance-none
+            bg-[#121620] border rounded-xl
+            text-sm px-4 py-3 pr-10 min-h-[48px]
+            outline-none transition-all duration-200
+            ${disabled
+              ? "border-zinc-800 text-zinc-600 cursor-not-allowed opacity-60"
+              : value
+                ? "border-zinc-750 text-white hover:border-zinc-605 focus:border-amber-500/70 focus:shadow-[0_0_0_3px_rgba(217,119,6,0.12)]"
+                : "border-zinc-800/80 text-zinc-400 hover:border-zinc-700 focus:border-amber-500/70 focus:shadow-[0_0_0_3px_rgba(217,119,6,0.12)]"
+            }
+          `}
+          aria-label={label}
+        >
+          <option value="" disabled>{placeholder}</option>
+          {options.map((opt) => (
+            <option key={opt} value={opt}>{opt}</option>
+          ))}
+        </select>
+        <ChevronDown
+          className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none transition-colors ${
+            disabled ? "text-zinc-700" : "text-zinc-500"
+          }`}
+          aria-hidden="true"
+        />
+      </div>
+    </div>
+  )
+}
+
+// ─── YMMFilter Component ───────────────────────────────────────────────────────
+function YMMFilter({
+  selectedBrand,
+  setSelectedBrand,
+  setSearchQuery,
+}: {
+  selectedBrand: string | null
+  setSelectedBrand: (brand: string | null) => void
+  setSearchQuery: (query: string) => void
+}) {
+  const [make, setMake] = useState("")
+  const [model, setModel] = useState("")
+  const [year, setYear] = useState("")
+
+  // Sincronizar selección desde afuera (e.g. desde chips de marca o URL params)
+  useEffect(() => {
+    if (selectedBrand) {
+      if (YMM_DATA[selectedBrand]) {
+        setMake(selectedBrand)
+      } else {
+        setMake("")
+        setModel("")
+        setYear("")
+      }
+    } else {
+      setMake("")
+      setModel("")
+      setYear("")
+    }
+  }, [selectedBrand])
+
+  const makes = Object.keys(YMM_DATA)
+  const models = make ? Object.keys(YMM_DATA[make] ?? {}) : []
+  const years = make && model ? (YMM_DATA[make]?.[model] ?? []) : []
+
+  const handleMakeChange = (val: string) => {
+    setMake(val)
+    setModel("")
+    setYear("")
+    setSelectedBrand(val || null)
+  }
+
+  const handleModelChange = (val: string) => {
+    setModel(val)
+    setYear("")
+  }
+
+  const handleSearch = () => {
+    if (!make) return
+    setSelectedBrand(make)
+    const searchString = `${model} ${year}`.trim()
+    setSearchQuery(searchString)
+  }
+
+  const isReady = !!make
+
+  return (
+    <div className="bg-[#121620]/40 border border-zinc-900 rounded-2xl p-4 sm:p-5 space-y-4 mb-6">
+      {/* Label */}
+      <div className="flex items-center justify-between">
+        <p className="text-white text-sm font-bold flex items-center gap-2">
+          <span>🚗</span> Filtra por tu vehículo
+        </p>
+        <span className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider bg-zinc-900 border border-zinc-800 px-3 py-1 rounded-full">
+          Paso a paso
+        </span>
+      </div>
+
+      {/* Dropdowns — responsive stack */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <SelectDropdown
+          id="ymm-make"
+          label="Marca"
+          value={make}
+          options={makes}
+          onChange={handleMakeChange}
+          placeholder="Ej: Toyota"
+        />
+        <SelectDropdown
+          id="ymm-model"
+          label="Modelo"
+          value={model}
+          options={models}
+          onChange={handleModelChange}
+          placeholder="Ej: Corolla"
+          disabled={!make}
+        />
+        <SelectDropdown
+          id="ymm-year"
+          label="Año"
+          value={year}
+          options={years}
+          onChange={setYear}
+          placeholder="Ej: 2018"
+          disabled={!model}
+        />
+      </div>
+
+      {/* CTA */}
+      <button
+        type="button"
+        onClick={handleSearch}
+        disabled={!isReady}
+        className={`
+          w-full flex items-center justify-center gap-2.5
+          font-bold text-sm rounded-xl py-3.5 min-h-[50px]
+          transition-all duration-200 active:scale-[0.98] cursor-pointer
+          ${isReady
+            ? "bg-amber-600 hover:bg-amber-500 text-white shadow-[0_4px_20px_rgba(217,119,6,0.20)] hover:shadow-[0_6px_28px_rgba(217,119,6,0.30)]"
+            : "bg-zinc-850 text-zinc-650 cursor-not-allowed border border-zinc-800/60"
+          }
+        `}
+        aria-label="Ver repuestos filtrados"
+      >
+        <Search className="w-4 h-4" aria-hidden="true" />
+        {make
+          ? `Ver repuestos para ${make}${model ? ` ${model}` : ""}${year ? ` ${year}` : ""} →`
+          : "Selecciona tu marca para continuar"
+        }
+      </button>
+    </div>
+  )
+}
 
 // ============================================================
 // PRODUCT IMAGE AREA
@@ -378,9 +597,9 @@ function FloatingWhatsApp({ isHidden }: { isHidden: boolean }) {
 }
 
 // ============================================================
-// MAIN CATALOG PAGE COMPONENT
+// CATALOG PAGE INNER CONTENT
 // ============================================================
-export default function CatalogPage() {
+function CatalogPageContent() {
   const {
     quoteItems,
     isQuotePanelOpen,
@@ -390,9 +609,27 @@ export default function CatalogPage() {
     updateQuantity,
   } = useQuoteStore()
 
+  const searchParams = useSearchParams()
   const [selectedBrand, setSelectedBrand] = useState<string | null>(null)
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
+
+  // Sincronizar estados locales con los query parameters del URL
+  useEffect(() => {
+    const qParam = searchParams.get("q")
+    const brandParam = searchParams.get("brand")
+    const categoryParam = searchParams.get("category")
+
+    if (qParam !== null) {
+      setSearchQuery(qParam)
+    }
+    if (brandParam !== null) {
+      setSelectedBrand(brandParam)
+    }
+    if (categoryParam !== null) {
+      setActiveCategory(categoryParam)
+    }
+  }, [searchParams])
 
   // Filter products based on state
   let filtered = SAMPLE_PRODUCTS
@@ -441,6 +678,14 @@ export default function CatalogPage() {
 
       {/* Catalog Filters & Grid Area */}
       <section className="py-10 px-4 md:px-8 max-w-7xl mx-auto">
+        
+        {/* ── YMM CASCADE FILTER BLOCK ── */}
+        <YMMFilter
+          selectedBrand={selectedBrand}
+          setSelectedBrand={setSelectedBrand}
+          setSearchQuery={setSearchQuery}
+        />
+
         {/* Search Input Card */}
         <div className="relative mb-6 group">
           <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
@@ -456,7 +701,7 @@ export default function CatalogPage() {
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-500 hover:text-white"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-500 hover:text-white cursor-pointer"
               aria-label="Limpiar búsqueda"
             >
               <X className="w-4 h-4" />
@@ -474,7 +719,7 @@ export default function CatalogPage() {
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setSelectedBrand(null)}
-                className={`rounded-full px-3.5 py-1.5 text-xs font-semibold tracking-wide transition-all border ${
+                className={`rounded-full px-3.5 py-1.5 text-xs font-semibold tracking-wide transition-all border cursor-pointer ${
                   selectedBrand === null
                     ? "bg-white text-zinc-950 border-white"
                     : "border-zinc-800 text-zinc-400 bg-zinc-950 hover:border-zinc-700 hover:text-white"
@@ -486,9 +731,9 @@ export default function CatalogPage() {
                 <button
                   key={brand.id}
                   onClick={() => setSelectedBrand(brand.label)}
-                  className={`rounded-full px-3.5 py-1.5 text-xs font-semibold tracking-wide transition-all border ${
+                  className={`rounded-full px-3.5 py-1.5 text-xs font-semibold tracking-wide transition-all border cursor-pointer ${
                     selectedBrand?.toLowerCase() === brand.label.toLowerCase()
-                      ? "bg-red-600 text-white border-red-600 shadow-[0_2px_10px_rgba(230,0,0,0.25)]"
+                      ? "bg-amber-600 text-white border-amber-600 shadow-[0_2px_10px_rgba(217,119,6,0.25)]"
                       : "border-zinc-800 text-zinc-400 bg-zinc-950 hover:border-zinc-700 hover:text-white"
                   }`}
                 >
@@ -506,7 +751,7 @@ export default function CatalogPage() {
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setActiveCategory(null)}
-                className={`rounded-full px-3.5 py-1.5 text-xs font-semibold tracking-wide transition-all border ${
+                className={`rounded-full px-3.5 py-1.5 text-xs font-semibold tracking-wide transition-all border cursor-pointer ${
                   activeCategory === null
                     ? "bg-white text-zinc-950 border-white"
                     : "border-zinc-800 text-zinc-400 bg-zinc-950 hover:border-zinc-700 hover:text-white"
@@ -518,7 +763,7 @@ export default function CatalogPage() {
                 <button
                   key={cat.id}
                   onClick={() => setActiveCategory(cat.label)}
-                  className={`rounded-full px-3.5 py-1.5 text-xs font-semibold tracking-wide transition-all border ${
+                  className={`rounded-full px-3.5 py-1.5 text-xs font-semibold tracking-wide transition-all border cursor-pointer ${
                     activeCategory?.toLowerCase() === cat.label.toLowerCase()
                       ? "bg-amber-500 text-zinc-950 border-amber-500 shadow-[0_2px_10px_rgba(245,158,11,0.25)]"
                       : "border-zinc-800 text-zinc-400 bg-zinc-950 hover:border-zinc-700 hover:text-white"
@@ -538,25 +783,25 @@ export default function CatalogPage() {
               Filtros Activos:
             </span>
             {selectedBrand && (
-              <span className="inline-flex items-center gap-1.5 bg-zinc-800 border border-zinc-700 text-zinc-300 text-xs px-3 py-1 rounded-full">
+              <span className="inline-flex items-center gap-1.5 bg-zinc-850 border border-zinc-800 text-zinc-300 text-xs px-3 py-1 rounded-full">
                 Marca: {selectedBrand}
-                <button onClick={() => setSelectedBrand(null)} className="hover:text-white p-0.5" aria-label="Remover filtro de marca">
+                <button onClick={() => setSelectedBrand(null)} className="hover:text-white p-0.5 cursor-pointer" aria-label="Remover filtro de marca">
                   <X className="w-3 h-3" />
                 </button>
               </span>
             )}
             {activeCategory && (
-              <span className="inline-flex items-center gap-1.5 bg-zinc-800 border border-zinc-700 text-zinc-300 text-xs px-3 py-1 rounded-full">
+              <span className="inline-flex items-center gap-1.5 bg-zinc-850 border border-zinc-800 text-zinc-300 text-xs px-3 py-1 rounded-full">
                 Cat: {activeCategory}
-                <button onClick={() => setActiveCategory(null)} className="hover:text-white p-0.5" aria-label="Remover filtro de categoría">
+                <button onClick={() => setActiveCategory(null)} className="hover:text-white p-0.5 cursor-pointer" aria-label="Remover filtro de categoría">
                   <X className="w-3 h-3" />
                 </button>
               </span>
             )}
             {searchQuery.trim() && (
-              <span className="inline-flex items-center gap-1.5 bg-zinc-800 border border-zinc-700 text-zinc-300 text-xs px-3 py-1 rounded-full">
+              <span className="inline-flex items-center gap-1.5 bg-zinc-850 border border-zinc-800 text-zinc-300 text-xs px-3 py-1 rounded-full">
                 &ldquo;{searchQuery.trim()}&rdquo;
-                <button onClick={() => setSearchQuery("")} className="hover:text-white p-0.5" aria-label="Remover búsqueda">
+                <button onClick={() => setSearchQuery("")} className="hover:text-white p-0.5 cursor-pointer" aria-label="Remover búsqueda">
                   <X className="w-3 h-3" />
                 </button>
               </span>
@@ -567,7 +812,7 @@ export default function CatalogPage() {
                 setSelectedBrand(null)
                 setSearchQuery("")
               }}
-              className="text-xs text-zinc-500 hover:text-white underline ml-auto transition-colors px-2 py-1"
+              className="text-xs text-zinc-500 hover:text-white underline ml-auto transition-colors px-2 py-1 cursor-pointer"
             >
               Limpiar todo
             </button>
@@ -618,7 +863,7 @@ export default function CatalogPage() {
                 setSelectedBrand(null)
                 setSearchQuery("")
               }}
-              className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors mt-1"
+              className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors mt-1 cursor-pointer"
             >
               Ver todos los repuestos
             </button>
@@ -645,5 +890,21 @@ export default function CatalogPage() {
         onUpdateQuantity={updateQuantity}
       />
     </main>
+  )
+}
+
+// ============================================================
+// MAIN PAGE SUSPENSE WRAPPER
+// ============================================================
+export default function CatalogPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center text-zinc-500 gap-3">
+        <div className="w-8 h-8 rounded-full border-4 border-amber-500/30 border-t-amber-500 animate-spin" />
+        <span className="text-sm font-semibold tracking-wider font-mono">Cargando catálogo...</span>
+      </div>
+    }>
+      <CatalogPageContent />
+    </Suspense>
   )
 }

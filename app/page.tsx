@@ -7,21 +7,6 @@
 // Security: All user-generated text that flows into WhatsApp URLs is passed
 // through encodeURIComponent() via buildWhatsAppURL() — never string-interpolated
 // raw into href attributes. This mitigates CWE-601 Open Redirect / URL injection.
-//
-// COMPONENT HIERARCHY:
-//   page.tsx (client boundary + state orchestrator)
-//   ├── HeroSection           (server-compatible, no "use client")
-//   ├── AuxilioBanner         (server-compatible)
-//   ├── HowItWorksSection     (inline — no state needed, too simple to extract)
-//   ├── CategoriesStrip       ← NEW modular component (components/CategoriesStrip.tsx)
-//   ├── DemandBanner          (server-compatible)
-//   ├── CatalogGrid           ← NEW modular component (components/CatalogGrid.tsx)
-//   │   └── ProductCard       ← NEW modular component (components/ProductCard.tsx)
-//   ├── StoreLocation
-//   ├── PaymentTrustBand
-//   ├── FloatingWhatsApp      (inline — single-use FAB)
-//   ├── FloatingQuoteBar
-//   └── QuoteDrawer           ← NEW modular component (components/QuoteDrawer.tsx)
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState } from "react"
@@ -32,7 +17,7 @@ import { buildWhatsAppURL } from "@/lib/config"
 import { useQuoteStore } from "@/lib/quote-store"
 
 // Layout components
-import HeroSection from "@/components/HeroSection"
+import HeroSlider from "@/components/HeroSlider"
 import PaymentTrustBand from "@/components/PaymentTrustBand"
 import DemandBanner from "@/components/DemandBanner"
 import AuxilioBanner from "@/components/AuxilioBanner"
@@ -138,7 +123,6 @@ function FloatingWhatsApp({ isHidden }: { isHidden: boolean }) {
 // MAIN HOME PAGE
 // ============================================================
 export default function Home() {
-  const router = useRouter()
   const {
     quoteItems,
     isQuotePanelOpen,
@@ -148,17 +132,8 @@ export default function Home() {
     updateQuantity,
   } = useQuoteStore()
 
-  const [searchQuery, setSearchQuery] = useState("")
   // Category filter state for CategoriesStrip → CatalogGrid connection
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
-
-  const handleBrandRedirect = (brand: string | null) => {
-    if (brand) router.push(`/catalogo?brand=${encodeURIComponent(brand)}`)
-  }
-
-  const handleCategoryFromHero = (cat: string | null) => {
-    if (cat) router.push(`/catalogo?category=${encodeURIComponent(cat)}`)
-  }
 
   const handleCategoryFilter = (cat: string | null) => {
     setActiveCategory(cat)
@@ -170,42 +145,19 @@ export default function Home() {
 
   return (
     <main>
-      {/* ── Hero ──────────────────────────────────────────────────────── */}
-      <HeroSection
-        selectedBrand={null}
-        setSelectedBrand={handleBrandRedirect}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        activeCategory={null}
-        setActiveCategory={handleCategoryFromHero}
-        topBarVisible={false}
-      />
-
-      {/* ── Auxilio Vial Banner ──────────────────────────────────────── */}
-      <AuxilioBanner />
+      {/* ── Hero Slider ────────────────────────────────────────────────── */}
+      <HeroSlider />
 
       {/* ── How It Works ─────────────────────────────────────────────── */}
       <HowItWorksSection />
 
       {/* ── Categories Strip ─────────────────────────────────────────── */}
-      {/*
-        CategoriesStrip drives activeCategory state which filters CatalogGrid below.
-        Mobile: 2×2 grid. md+: single 4-col row.
-      */}
       <CategoriesStrip
         activeCategory={activeCategory}
         onSelectCategory={handleCategoryFilter}
       />
 
-      {/* ── Demand Banner (pattern interrupt) ────────────────────────── */}
-      <DemandBanner />
-
       {/* ── Featured Products Grid ───────────────────────────────────── */}
-      {/*
-        CatalogGrid pulls data directly from lib/data.ts (SAMPLE_PRODUCTS).
-        filterCategory connects to CategoriesStrip state.
-        Limit=8 for homepage; /catalogo page uses limit=undefined for all.
-      */}
       <CatalogGrid
         limit={8}
         filterCategory={activeCategory}
@@ -219,7 +171,7 @@ export default function Home() {
       <StoreLocation />
 
       {/* ── Payment Trust Band (cognitive closure) ───────────────────── */}
-      <PaymentTrustBand />
+      {/* <PaymentTrustBand /> */}
 
       {/* ── Floating WhatsApp FAB ────────────────────────────────────── */}
       <FloatingWhatsApp isHidden={isQuotePanelOpen} />
@@ -232,10 +184,6 @@ export default function Home() {
       />
 
       {/* ── Quote Drawer (off-canvas) ────────────────────────────────── */}
-      {/*
-        QuoteDrawer uses h-[100dvh] internally to prevent Safari Mobile
-        from cutting off the WhatsApp CTA behind the browser chrome.
-      */}
       <QuoteDrawer
         isOpen={isQuotePanelOpen}
         onClose={() => setIsQuotePanelOpen(false)}

@@ -4,7 +4,7 @@ import './globals.css'
 import AnnouncementBar from '@/components/AnnouncementBar'
 import Navbar from '@/components/Navbar'
 import SiteFooter from '@/components/SiteFooter'
-import BrandScrollBar from '@/components/BrandScrollBar'
+// import BrandScrollBar from '@/components/BrandScrollBar'
 
 export const metadata: Metadata = {
   title: 'Automotriz El Shaddai | Repuestos para Chery, Toyota, Ford y Chevrolet',
@@ -35,7 +35,7 @@ export default function RootLayout({
     <html lang="es" className="bg-[#121212]">
       <body className="font-sans antialiased bg-[#121212] text-white">
         <header className="w-full flex flex-col">
-          <BrandScrollBar />
+          {/* <BrandScrollBar /> */}
           <AnnouncementBar />
           <Navbar />
         </header>

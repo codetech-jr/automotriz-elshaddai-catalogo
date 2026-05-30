@@ -25,9 +25,14 @@ const BRANDS_LOOP = [...BRANDS, ...BRANDS]
 
 export default function BrandScrollBar() {
   return (
+    // CRO · Mobile Occulting: hidden on <768px.
+    // On mobile, every pixel "above the fold" is prime real-estate. The brand
+    // strip adds authority on desktop but creates cognitive overhead on the
+    // tiny first viewport — where the H1 should be the first thing the user reads.
+    // At md (768px+) it renders normally and delivers the Authority Bias signal.
     <section
       aria-label="Marcas de repuestos disponibles"
-      className="relative bg-[#0d0d0d] border-y border-zinc-800/50 py-3 md:py-4 overflow-hidden"
+      className="hidden md:block relative bg-[#0d0d0d] border-y border-zinc-800/50 py-3 md:py-4 overflow-hidden"
     >
       {/* ── Left fade ── */}
       <div
