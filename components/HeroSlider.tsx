@@ -39,14 +39,6 @@ export default function HeroSlider() {
             document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" })
           }
         },
-        {
-          text: "Asesoría Rápida",
-          type: "whatsapp",
-          action: () => {
-            const url = buildWhatsAppURL("Hola, estoy navegando en su catálogo y quisiera solicitar asesoría rápida para un repuesto.")
-            window.open(url, "_blank", "noopener,noreferrer")
-          }
-        }
       ]
     },
     {
@@ -125,7 +117,7 @@ export default function HeroSlider() {
   return (
     <section
       aria-label="Carrusel de Beneficios"
-      className="relative w-full overflow-hidden bg-[#0d0f12] min-h-[550px] sm:min-h-[600px] md:min-h-[640px] md:h-[80vh] h-auto flex items-center pt-40 pb-16 md:pt-24 md:pb-0 select-none"
+      className="relative w-full overflow-hidden bg-[#0d0f12] min-h-[550px] sm:min-h-[600px] md:min-h-[640px] md:h-[80vh] h-auto flex items-center pt-40 pb-16 md:pt-24 md:pb-0 select-none max-w-full"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onTouchStart={() => setIsPaused(true)}
@@ -161,9 +153,8 @@ export default function HeroSlider() {
         bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjc1IiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIzMDAlIiBoZWlnaHQ9IjMwMCUiIGZpbHRlcj0idXJsKCNhKSIgb3BhY2l0eT0iMSIvPjwvc3ZnPg==')]" />
 
       {/* ── Slide Content Container ── */}
-      <div className="relative z-20 w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 flex flex-col justify-center md:h-full text-left">
+      <div className="relative z-20 w-full max-w-7xl mx-auto px-14 sm:px-10 lg:px-16 flex flex-col justify-center md:h-full text-left">
         {slides.map((slide, idx) => {
-          const BadgeIcon = slide.badgeIcon
           return (
             <div
               key={`content-${slide.id}`}
@@ -172,16 +163,6 @@ export default function HeroSlider() {
                 idx === activeIdx ? "flex opacity-100 translate-y-0" : "hidden opacity-0 translate-y-6"
               )}
             >
-              {/* Slide Pill/Badge */}
-              <div
-                className={cn(
-                  "inline-flex items-center gap-2 border rounded-full px-3.5 py-1 text-xs font-semibold tracking-wide mb-1 uppercase",
-                  slide.badgeColor
-                )}
-              >
-                <BadgeIcon className="w-3.5 h-3.5 animate-pulse" />
-                <span>{slide.badge}</span>
-              </div>
 
               {/* Slide Title — Fluid Typography with clamp for mobile comfort */}
               <h1
@@ -224,20 +205,20 @@ export default function HeroSlider() {
         })}
       </div>
 
-      {/* ── Desktop Lateral Chevron Controls (hidden on mobile) ── */}
+      {/* ── Lateral Chevron Controls (Visible on all viewports, responsive sizing) ── */}
       <button
         onClick={prevSlide}
-        className="absolute left-6 z-30 hidden md:flex items-center justify-center w-12 h-12 rounded-xl border border-zinc-800 bg-[#0d0f12]/40 backdrop-blur-sm text-zinc-400 hover:text-white hover:border-zinc-600 hover:bg-[#0d0f12]/80 transition-all duration-200 active:scale-90 cursor-pointer"
+        className="absolute left-3 md:left-6 z-30 flex items-center justify-center w-8 h-8 md:w-12 md:h-12 rounded-xl border border-zinc-800 bg-[#0d0f12]/30 md:bg-[#0d0f12]/40 backdrop-blur-sm text-zinc-400 hover:text-white hover:border-zinc-600 hover:bg-[#0d0f12]/80 transition-all duration-200 active:scale-90 cursor-pointer"
         aria-label="Diapositiva anterior"
       >
-        <ChevronLeft className="w-6 h-6" />
+        <ChevronLeft className="w-4 h-4 md:w-6 md:h-6" />
       </button>
       <button
         onClick={nextSlide}
-        className="absolute right-6 z-30 hidden md:flex items-center justify-center w-12 h-12 rounded-xl border border-zinc-800 bg-[#0d0f12]/40 backdrop-blur-sm text-zinc-400 hover:text-white hover:border-zinc-600 hover:bg-[#0d0f12]/80 transition-all duration-200 active:scale-90 cursor-pointer"
+        className="absolute right-3 md:right-6 z-30 flex items-center justify-center w-8 h-8 md:w-12 md:h-12 rounded-xl border border-zinc-800 bg-[#0d0f12]/30 md:bg-[#0d0f12]/40 backdrop-blur-sm text-zinc-400 hover:text-white hover:border-zinc-600 hover:bg-[#0d0f12]/80 transition-all duration-200 active:scale-90 cursor-pointer"
         aria-label="Siguiente diapositiva"
       >
-        <ChevronRight className="w-6 h-6" />
+        <ChevronRight className="w-4 h-4 md:w-6 md:h-6" />
       </button>
 
       {/* ── Navigation Bottom Indicators (Pill Progress indicators) ── */}

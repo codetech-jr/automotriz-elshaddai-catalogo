@@ -78,7 +78,7 @@ export default function StoreLocation() {
     <section 
       id="store-location" 
       aria-labelledby="location-heading" 
-      className="bg-[var(--surface-base,#0d0d0d)] py-16 px-4 md:px-8 border-t border-zinc-900"
+      className="bg-[var(--surface-base,#0d0d0d)] py-16 px-4 md:px-8 border-t border-zinc-900 overflow-hidden"
     >
       <div className="max-w-7xl mx-auto">
         {/* Schema markup inject */}
@@ -134,7 +134,9 @@ export default function StoreLocation() {
                   <div>
                     <h3 className="text-zinc-500 text-xs font-bold uppercase tracking-wider mb-1">Horario de Atención</h3>
                     <p className="text-white text-sm md:text-base font-semibold">
-                      <time dateTime="Mo-Sa 08:00-18:00">Lun-Sáb 8am-6pm</time>
+                      <time dateTime="Mo-Fr 08:00-17:30">Lunes - Viernes 8:00 AM - 5:30 PM</time>
+                      <br />
+                      <time dateTime="Sa 08:00-14:00">Sábado 8:00 AM - 2:00 PM</time>
                     </p>
                   </div>
                 </div>

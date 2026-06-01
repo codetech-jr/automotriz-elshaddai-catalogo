@@ -33,7 +33,7 @@ export default function CategoriesStrip({
   return (
     <section
       aria-labelledby="categories-strip-heading"
-      className={cn("bg-[#090b0e] py-16 px-4 md:px-8 border-t border-[#121620]", className)}
+      className={cn("bg-[#090b0e] py-16 px-4 md:px-8 border-t border-zinc-900 overflow-hidden", className)}
     >
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}

@@ -54,7 +54,7 @@ function HowItWorksSection() {
   return (
     <section
       aria-labelledby="how-it-works-heading"
-      className="bg-[#121212] py-14 px-4 md:px-8"
+      className="bg-[#121212] py-14 px-4 md:px-8 border-t border-zinc-900 overflow-hidden"
     >
       <div className="max-w-7xl mx-auto">
         <h2
@@ -144,7 +144,7 @@ export default function Home() {
   }
 
   return (
-    <main>
+    <main className="overflow-x-hidden max-w-full">
       {/* ── Hero Slider ────────────────────────────────────────────────── */}
       <HeroSlider />
 

@@ -32,9 +32,9 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="es" className="bg-[#121212]">
-      <body className="font-sans antialiased bg-[#121212] text-white">
-        <header className="w-full flex flex-col">
+    <html lang="es" className="bg-[#121212] overflow-x-hidden">
+      <body className="font-sans antialiased bg-[#121212] text-white overflow-x-hidden max-w-full">
+        <header className="w-full flex flex-col overflow-hidden">
           {/* <BrandScrollBar /> */}
           <AnnouncementBar />
           <Navbar />

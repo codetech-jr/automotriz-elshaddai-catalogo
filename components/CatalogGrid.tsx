@@ -28,6 +28,7 @@
 import { SAMPLE_PRODUCTS, type Product, type QuoteItem } from "@/lib/data"
 import ProductCard from "@/components/ProductCard"
 import { cn } from "@/lib/utils"
+import { ArrowRight } from "lucide-react"
 
 // ── Props ──────────────────────────────────────────────────────────────────────
 
@@ -79,7 +80,7 @@ export default function CatalogGrid({
     <section
       id="catalog"
       aria-labelledby="catalog-heading"
-      className={cn("bg-[#0d0d0d] py-14 md:py-16 px-4 md:px-8", className)}
+      className={cn("bg-[#0d0d0d] py-14 md:py-16 px-4 md:px-8 border-t border-zinc-900 overflow-hidden", className)}
     >
       <div className="max-w-7xl mx-auto">
         {/* ── Section Header ──────────────────────────────────────────── */}
@@ -107,6 +108,22 @@ export default function CatalogGrid({
               {subheading}
             </p>
           )}
+
+          {/* Visual indicator arrow for mobile horizontal scroll */}
+          <div className="md:hidden flex justify-center items-center gap-2 mt-4 text-amber-500/95 text-[11px] font-bold uppercase tracking-wider bg-zinc-900/60 border border-zinc-800/60 rounded-full px-4 py-1.5 w-fit mx-auto select-none">
+            <span>Desliza para ver más</span>
+            <ArrowRight className="w-3.5 h-3.5 animate-bounce-x" />
+          </div>
+
+          <style dangerouslySetInnerHTML={{__html: `
+            @keyframes bounce-x {
+              0%, 100% { transform: translateX(0); }
+              50% { transform: translateX(5px); }
+            }
+            .animate-bounce-x {
+              animation: bounce-x 1.2s infinite;
+            }
+          `}} />
 
           {/* Active filter indicator */}
           {(filterCategory || filterBrand) && (

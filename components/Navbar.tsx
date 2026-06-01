@@ -154,15 +154,6 @@ function NavSearchBar({ onSearch }: { onSearch: (q: string) => void }) {
             <X className="w-3.5 h-3.5" />
           </button>
         )}
-        {/* Amber search button — premium corporate accent color */}
-        <button
-          type="button"
-          onClick={() => commit(query)}
-          className="flex-shrink-0 bg-amber-600 hover:bg-amber-500 active:scale-95 text-white text-xs font-bold px-4 py-2 rounded-lg transition-all duration-150 whitespace-nowrap h-9 flex items-center justify-center"
-          aria-label="Buscar en el catálogo"
-        >
-          Buscar
-        </button>
       </div>
 
       {/* ── Autocomplete Dropdown ────────────────────────────────────── */}
@@ -229,29 +220,21 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="sticky top-0 z-50 w-full bg-[#0d0f12]/90 backdrop-blur-md border-b border-[#252b3b] select-none">
+    <nav className="flex flex-col sticky top-0 z-50 w-full max-w-full overflow-x-hidden bg-[#0d0f12]/90 backdrop-blur-md border-b border-[#252b3b] select-none">
 
       {/* ── Main Row: [LOGO] <--- [BUSCADOR GIGANTE AL MEDIO] ---> [LINKS NAVEGACIÓN] ── */}
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-6 px-4 md:px-8 py-3.5">
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-6 px-4 md:px-8 py-3.5 w-full order-1">
 
         {/* Left: Logo */}
         <div className="flex items-center flex-shrink-0">
-          <a href="/" className="flex items-center gap-2 group cursor-pointer">
-            <div className="w-9 h-9 rounded-xl overflow-hidden border border-zinc-800 flex items-center justify-center bg-zinc-950 group-hover:scale-105 transition-all duration-200">
+          <a href="/" className="flex items-center group cursor-pointer">
+            <div className="w-14 h-14 md:w-16 md:h-16 rounded-full overflow-hidden border-2 border-zinc-750 flex items-center justify-center bg-zinc-950 group-hover:border-amber-500 group-hover:scale-105 transition-all duration-200 shadow-lg shadow-black/40">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/logo-el-shaddai.jpg"
                 alt="Automotriz El Shaddai Logo"
                 className="w-full h-full object-cover"
               />
-            </div>
-            <div className="flex flex-col">
-              <span className="font-black text-white text-base md:text-lg tracking-tight leading-none">
-                El Shaddai
-              </span>
-              <span className="text-[9px] text-zinc-500 font-mono tracking-widest leading-none mt-0.5 uppercase">
-                Automotriz
-              </span>
             </div>
           </a>
         </div>
@@ -304,12 +287,12 @@ export default function Navbar() {
       </div>
 
       {/* ── Mobile Search Bar — dedicated second row, always visible ───────── */}
-      <div className="md:hidden px-4 pb-1 border-t border-[#252b3b]/50 pt-2.5">
+      <div className="md:hidden px-4 pb-1 border-t border-[#252b3b]/50 pt-2.5 order-3">
         <NavSearchBar onSearch={handleSearch} />
       </div>
 
       {/* ── Mobile Brand Pill Strip — horizontal scrollable, visible only on mobile/tablet (md:hidden) ── */}
-      <div className="md:hidden px-4 pb-3 pt-1.5 flex items-center gap-2 overflow-x-auto scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="md:hidden px-4 pb-3 pt-1.5 flex items-center gap-2 overflow-x-auto scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden order-4">
         <span className="text-zinc-500 text-[10px] font-black uppercase tracking-wider flex-shrink-0 mr-1">
           Marcas:
         </span>
@@ -326,7 +309,7 @@ export default function Navbar() {
 
       {/* ── Mobile Navigation Dropdown ───────────────────────────────────── */}
       {isMobileMenuOpen && (
-        <div className="md:hidden border-t border-[#252b3b] px-4 py-4 flex flex-col gap-4 animate-[fadeIn_0.2s_ease-out]">
+        <div className="md:hidden border-t border-[#252b3b] px-4 py-4 flex flex-col gap-4 animate-[fadeIn_0.2s_ease-out] order-2">
           <a
             href="/catalogo"
             onClick={() => setIsMobileMenuOpen(false)}
