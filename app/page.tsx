@@ -28,6 +28,8 @@ import StoreLocation from "@/components/StoreLocation"
 import CategoriesStrip from "@/components/CategoriesStrip"
 import CatalogGrid from "@/components/CatalogGrid"
 import QuoteDrawer from "@/components/QuoteDrawer"
+import SpecializedModels from "@/components/SpecializedModels"
+
 
 // ============================================================
 // HOW IT WORKS (inline — simple static content)
@@ -150,6 +152,9 @@ export default function Home() {
 
       {/* ── How It Works ─────────────────────────────────────────────── */}
       <HowItWorksSection />
+
+      {/* ── Specialized Models (SEO & Compatibility Panel) ───────────── */}
+      <SpecializedModels />
 
       {/* ── Categories Strip ─────────────────────────────────────────── */}
       <CategoriesStrip

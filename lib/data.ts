@@ -84,6 +84,7 @@ export const BRAND_META: BrandMeta[] = [
   { id: "chevrolet",  label: "Chevrolet",  initials: "CV", colorClass: "text-yellow-400" },
   { id: "volkswagen", label: "Volkswagen", initials: "VW", colorClass: "text-sky-400" },
   { id: "hyundai",    label: "Hyundai",    initials: "HY", colorClass: "text-blue-500" },
+  { id: "daewoo",     label: "Daewoo",     initials: "DW", colorClass: "text-orange-400" },
 ]
 
 // ── Derived helpers ────────────────────────────────────────────────────────────
@@ -115,3 +116,93 @@ export function filterProducts(
     return true
   })
 }
+
+// ── Supported Vehicles Database for SEO & UI ───────────────────────────────────
+export interface SupportedVehicleMake {
+  id: string
+  label: string
+  models: string[]
+}
+
+export const SUPPORTED_VEHICLES: SupportedVehicleMake[] = [
+  {
+    id: "toyota",
+    label: "Toyota",
+    models: [
+      "Corolla 1.6 (Araya / Sky / Baby)",
+      "Corolla 1.8 (Araya / Sky / Baby)",
+      "Corolla Sensation 03-08",
+      "Corolla Explosion 09-11",
+      "Corolla 12-16 (Irani)",
+      "Corolla 12-16 (Nacional)",
+      "Corolla 12-16 (Importado)",
+      "Merú",
+      "Prado",
+      "4Runner (00-02+)",
+      "Fortuner",
+      "Hilux (2RZ / 3RZ)",
+      "Yaris Sol",
+      "Yaris Belta",
+      "Starlet",
+      "Terios 1.3 (Daihatsu)",
+      "Terios 1.5 (Daihatsu)"
+    ]
+  },
+  {
+    id: "chevrolet",
+    label: "Chevrolet",
+    models: [
+      "Corsa",
+      "Aveo",
+      "Optra",
+      "Spark",
+      "Montana",
+      "Meriva",
+      "Luv Dmax"
+    ]
+  },
+  {
+    id: "ford",
+    label: "Ford",
+    models: [
+      "Fiesta (Power / Max / Move)",
+      "Explorer (Eddie Bauer / XLT)",
+      "EcoSport",
+      "Ka",
+      "Focus",
+      "F-150 (Fortaleza / FX4)",
+      "F-350 (Tritón)",
+      "Fusion",
+      "Laser"
+    ]
+  },
+  {
+    id: "hyundai",
+    label: "Hyundai",
+    models: [
+      "Accent",
+      "Excel",
+      "Getz",
+      "Tucson"
+    ]
+  },
+  {
+    id: "daewoo",
+    label: "Daewoo",
+    models: [
+      "Cielo",
+      "Lanos",
+      "Nubira"
+    ]
+  },
+  {
+    id: "volkswagen",
+    label: "Volkswagen (VW)",
+    models: [
+      "Gol",
+      "Crossfox",
+      "Golf"
+    ]
+  }
+]
+

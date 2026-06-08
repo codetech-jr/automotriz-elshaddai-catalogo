@@ -11,7 +11,7 @@ export const BUSINESS = {
   },
 } as const
 
-export type BrandId = "chery" | "toyota" | "ford" | "chevrolet" | "volkswagen" | "hyundai"
+export type BrandId = "chery" | "toyota" | "ford" | "chevrolet" | "volkswagen" | "hyundai" | "daewoo"
 
 export interface Brand {
   id: BrandId
@@ -25,6 +25,7 @@ export const BRANDS: Brand[] = [
   { id: "chevrolet", label: "Chevrolet" },
   { id: "volkswagen", label: "Volkswagen" },
   { id: "hyundai", label: "Hyundai" },
+  { id: "daewoo", label: "Daewoo" },
 ]
 
 export interface Category {
@@ -69,6 +70,8 @@ export const SAMPLE_PRODUCTS: Product[] = [
   { id: "14", name: "Bujía Iridium (Set de 4)", brand: "Toyota", category: "Eléctrico", compatibility: "Yaris / Corolla", sku: "TOY-ELC-052" },
   { id: "15", name: "Kit de Pastillas de Freno Traseras", brand: "Volkswagen", category: "Frenos", compatibility: "Jetta / Bora", sku: "VW-FRN-009" },
   { id: "16", name: "Amortiguador Delantero", brand: "Hyundai", category: "Suspensión", compatibility: "Accent 2012–2018", sku: "HYU-SUS-022" },
+  { id: "17", name: "Distribuidor de Encendido", brand: "Daewoo", category: "Eléctrico", compatibility: "Cielo 1.5 1995–2000", sku: "DAE-ELC-001" },
+  { id: "18", name: "Pastillas de Freno Delanteras", brand: "Daewoo", category: "Frenos", compatibility: "Lanos / Cielo / Nubira", sku: "DAE-FRN-002" },
 ]
 
 export interface QuoteItem {

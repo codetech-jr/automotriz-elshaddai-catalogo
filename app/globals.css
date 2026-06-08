@@ -156,3 +156,9 @@
     scroll-behavior: auto !important;
   }
 }
+
+@utility bg-surface-raised {
+  background-color: rgba(24, 24, 27, 0.65);
+  backdrop-filter: blur(6px);
+}
+
