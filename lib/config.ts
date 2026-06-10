@@ -89,13 +89,20 @@ export function buildWhatsAppURL(message: string): string {
   return `https://wa.me/${BUSINESS.phone}?text=${encoded}`
 }
 
-// Build quote message from list of items
-export function buildQuoteMessage(items: QuoteItem[]): string {
+// Build quote message from list of items, optionally including vehicle details
+export function buildQuoteMessage(items: QuoteItem[], vehicleInfo?: string): string {
   if (items.length === 0) return ""
   
   const list = items
     .map((item, idx) => `${idx + 1}. ${item.name} (${item.brand})${item.quantity > 1 ? ` x${item.quantity}` : ""}`)
     .join("\n")
   
-  return `Hola, les contacto desde su catálogo digital. Me gustaría cotizar:\n\n${list}\n\n¿Disponibilidad y precio?`
+  let msg = `Hola, les contacto desde su catálogo digital. Me gustaría cotizar:\n\n${list}`
+  
+  if (vehicleInfo && vehicleInfo.trim()) {
+    msg += `\n\n*Vehículo a verificar:* ${vehicleInfo.trim()}`
+  }
+  
+  msg += `\n\n¿Disponibilidad y precio?`
+  return msg
 }

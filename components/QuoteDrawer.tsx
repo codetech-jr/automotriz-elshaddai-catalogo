@@ -29,11 +29,11 @@
 //   • Mobile:  w-[92vw] max-w-[440px]  → nearly full-screen on phones
 //   • Desktop: capped at max-w-[440px] → feels like a sidebar panel
 // ─────────────────────────────────────────────────────────────────────────────
-
-import { useEffect, useRef } from "react"
-import { MessageCircle, Minus, Plus, ShoppingCart, Wrench, X } from "lucide-react"
+import { useEffect, useRef, useState } from "react"
+import { MessageCircle, Minus, Plus, ShoppingCart, Wrench, X, Trash2 } from "lucide-react"
 import { buildWhatsAppURL, buildQuoteMessage, type QuoteItem } from "@/lib/config"
 import { cn } from "@/lib/utils"
+import TestimonialTrustBanner from "@/components/TestimonialTrustBanner"
 
 // ── Props ──────────────────────────────────────────────────────────────────────
 
@@ -55,13 +55,40 @@ export default function QuoteDrawer({
   onUpdateQuantity,
 }: QuoteDrawerProps) {
   const closeButtonRef = useRef<HTMLButtonElement>(null)
-  const message = buildQuoteMessage(quoteItems)
+  
+  // State for YMM vehicle verification input (fricción positiva / CRO)
+  const [vehicleInfo, setVehicleInfo] = useState("")
+
+  // State for dynamic business hours logic (avoids server-side hydration mismatches)
+  const [isBusinessHours, setIsBusinessHours] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    const checkBusinessHours = () => {
+      const now = new Date()
+      const hour = now.getHours()
+      // Business hours: 08:00 to 18:00
+      setIsBusinessHours(hour >= 8 && hour < 18)
+    }
+
+    checkBusinessHours()
+    const interval = setInterval(checkBusinessHours, 60000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Dynamic behind-the-scenes string building and URL compilation
+  const message = buildQuoteMessage(quoteItems, vehicleInfo)
   const waUrl = buildWhatsAppURL(message)
+
+  // Reset vehicleInfo on drawer close
+  useEffect(() => {
+    if (!isOpen) {
+      setVehicleInfo("")
+    }
+  }, [isOpen])
 
   // ── Focus management: move focus to close button when panel opens ──
   useEffect(() => {
     if (isOpen) {
-      // Small delay lets the CSS transition start before focus (avoids jump)
       const t = setTimeout(() => closeButtonRef.current?.focus(), 50)
       return () => clearTimeout(t)
     }
@@ -88,10 +115,6 @@ export default function QuoteDrawer({
   return (
     <>
       {/* ── Backdrop overlay ──────────────────────────────────────────────── */}
-      {/*
-        Pointer-events controlled by isOpen state so clicks reach the page
-        when closed. Transition: opacity 300ms ease-out (interaction-design).
-      */}
       <div
         className={cn(
           "fixed inset-0 z-40 bg-black/60 backdrop-blur-sm",
@@ -103,40 +126,21 @@ export default function QuoteDrawer({
       />
 
       {/* ── Drawer Panel ───────────────────────────────────────────────────── */}
-      {/*
-        h-[100dvh] — CRITICAL mobile fix.
-        dvh tracks the ACTUAL current viewport height including browser chrome.
-        Without this, Safari Mobile cuts off the WhatsApp CTA button at the
-        bottom behind the home indicator / tab bar.
-
-        Slide-in from right: translate-x-full → translate-x-0
-        Duration 300ms ease-out matches "medium transitions" in timing guidelines.
-      */}
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="quote-drawer-title"
         className={cn(
-          // Positioning
           "fixed top-0 right-0 z-50",
-          // Width: 92vw on small screens, capped at 440px for larger screens
           "w-[92vw] max-w-[440px]",
-          // CRITICAL: dvh for Safari Mobile compatibility
           "h-[100dvh]",
-          // Internal layout
-          "flex flex-col",
-          // Visuals
+          "flex flex-col overflow-hidden",
           "bg-[#141414] shadow-2xl border-l border-zinc-800",
-          // Slide transition — transform only (GPU composited)
           "transition-transform duration-300 ease-out",
           isOpen ? "translate-x-0" : "translate-x-full"
         )}
       >
         {/* ── Header ────────────────────────────────────────────────────── */}
-        {/*
-          flex-shrink-0 — always visible, never squeezed by the scroll area.
-          Sticky top content regardless of item list length.
-        */}
         <div className="flex-shrink-0 flex items-center justify-between px-4 py-4 border-b border-zinc-800">
           <div>
             <h2
@@ -152,16 +156,11 @@ export default function QuoteDrawer({
             </p>
           </div>
 
-          {/*
-            Close button — 44×44px touch target (w-11 h-11).
-            Receives focus automatically when drawer opens (see useEffect above).
-          */}
           <button
             ref={closeButtonRef}
             onClick={onClose}
             aria-label="Cerrar panel de cotización"
             className={cn(
-              // 44×44px touch target — explicit, not relying on icon size
               "w-11 h-11",
               "flex items-center justify-center rounded-xl",
               "text-zinc-400 hover:text-white",
@@ -173,59 +172,105 @@ export default function QuoteDrawer({
           </button>
         </div>
 
-        {/* ── Scrollable Item List ──────────────────────────────────────── */}
-        {/*
-          flex-1 overflow-y-auto — grows to fill available space between
-          header and footer, then scrolls if items overflow.
-          The two flex-shrink-0 siblings (header + footer) always stay visible.
-        */}
+        {/* ── Scrollable Area (Products + YMM Input + Badges + Reviews) ── */}
         <div
-          className="flex-1 overflow-y-auto p-4 space-y-3"
+          className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4"
           aria-label="Lista de productos para cotizar"
         >
           {quoteItems.length === 0 ? (
             <EmptyQuoteState onClose={onClose} />
           ) : (
-            quoteItems.map((item) => (
-              <QuoteItem
-                key={item.id}
-                item={item}
-                onRemove={() => onRemoveItem(item.id)}
-                onDecrement={() =>
-                  item.quantity === 1
-                    ? onRemoveItem(item.id)
-                    : onUpdateQuantity(item.id, -1)
-                }
-                onIncrement={() => onUpdateQuantity(item.id, 1)}
-              />
-            ))
+            <>
+              {/* Product cards list */}
+              <div className="space-y-3">
+                {quoteItems.map((item) => (
+                  <QuoteItem
+                    key={item.id}
+                    item={item}
+                    onRemove={() => onRemoveItem(item.id)}
+                    onDecrement={() =>
+                      item.quantity === 1
+                        ? onRemoveItem(item.id)
+                        : onUpdateQuantity(item.id, -1)
+                    }
+                    onIncrement={() => onUpdateQuantity(item.id, 1)}
+                  />
+                ))}
+              </div>
+
+              {/* YMM Positive Friction Input (Form CRO & Reducing buying fear) */}
+              <div className="space-y-1.5 pt-3 border-t border-zinc-900">
+                <label 
+                  htmlFor="vehicle-verify-input" 
+                  className="block text-xs font-bold text-zinc-300 select-none leading-snug"
+                >
+                  ¿Quieres que verifiquemos si le queda a tu vehículo? Déjanos el año y modelo aquí:
+                </label>
+                <input
+                  id="vehicle-verify-input"
+                  type="text"
+                  value={vehicleInfo}
+                  onChange={(e) => setVehicleInfo(e.target.value)}
+                  placeholder="Ej: Toyota Corolla 2015, Arauco 2018..."
+                  className="w-full bg-[#0d0d0d] border border-zinc-800 focus:border-amber-500/80 rounded-xl px-3.5 py-3 text-xs text-white placeholder-zinc-650 outline-none transition-all focus:ring-1 focus:ring-amber-500/20"
+                />
+              </div>
+
+              {/* Static Trust Badges (CRO & Trust building) */}
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex items-start gap-1.5 p-2 bg-[#0d0d0d]/80 rounded-xl border border-zinc-850">
+                  <span className="text-xs" aria-hidden="true">⏱️</span>
+                  <span className="text-[10px] leading-tight font-semibold text-zinc-400">
+                    Respondemos en menos de 15 minutos
+                  </span>
+                </div>
+                <div className="flex items-start gap-1.5 p-2 bg-[#0d0d0d]/80 rounded-xl border border-zinc-850">
+                  <span className="text-xs" aria-hidden="true">🛡️</span>
+                  <span className="text-[10px] leading-tight font-semibold text-zinc-400">
+                    Cotización 100% gratuita y sin compromiso
+                  </span>
+                </div>
+              </div>
+
+              {/* Google Reviews Social Proof (CRO) */}
+              <TestimonialTrustBanner />
+            </>
           )}
         </div>
 
-        {/* ── Footer CTAs ───────────────────────────────────────────────── */}
-        {/*
-          Only rendered when list has items.
-          flex-shrink-0 — always anchored to the bottom, never scrolled away.
-          padding-bottom: env(safe-area-inset-bottom) via pb-safe handles
-          notch/home-indicator on iPhones.
-        */}
+        {/* ── Fixed Footer CTAs (Sticky WhatsApp + Status + Close) ─────────── */}
         {quoteItems.length > 0 && (
-          <div className="flex-shrink-0 border-t border-zinc-800 px-4 pt-4 pb-4 space-y-3">
-            {/* Message preview */}
-            <div className="bg-[#0f0f0f] rounded-xl p-3 max-h-24 overflow-y-auto">
-              <p className="text-zinc-600 text-[10px] uppercase tracking-wider mb-1 font-bold">
-                Mensaje a enviar:
-              </p>
-              <p className="text-zinc-400 text-xs leading-relaxed whitespace-pre-line">
-                {message}
-              </p>
-            </div>
+          <div className="flex-shrink-0 border-t border-zinc-800 px-4 pt-4 pb-6 space-y-4 bg-[#141414] pb-safe">
+            
+            {/* Dynamic Business Hours Status (Marketing Psychology) */}
+            {isBusinessHours !== null && (
+              <div 
+                className={cn(
+                  "flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold border transition-all duration-300",
+                  isBusinessHours 
+                    ? "bg-[#0d1f14] border-emerald-900/60 text-emerald-400"
+                    : "bg-zinc-900/80 border-zinc-800 text-zinc-400"
+                )}
+                role="status"
+              >
+                <span className="relative flex h-2 w-2 flex-shrink-0">
+                  {isBusinessHours && (
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  )}
+                  <span className={cn(
+                    "relative inline-flex rounded-full h-2 w-2",
+                    isBusinessHours ? "bg-emerald-500" : "bg-zinc-500"
+                  )}></span>
+                </span>
+                <span className="leading-tight">
+                  {isBusinessHours 
+                    ? "🟢 Asesores en línea listos para cotizar" 
+                    : "🌙 Envía tu lista ahora y serás el primero en recibir respuesta mañana"}
+                </span>
+              </div>
+            )}
 
-            {/*
-              Primary CTA — WhatsApp.
-              min-h-[56px]: oversized primary button, easy thumb tap.
-              This is the key conversion action — maximum prominence.
-            */}
+            {/* Primary CTA — WhatsApp Redirection */}
             <a
               href={waUrl}
               target="_blank"
@@ -236,7 +281,7 @@ export default function QuoteDrawer({
                 "w-full min-h-[56px] rounded-xl",
                 "bg-[#25D366] hover:bg-[#1da851]",
                 "text-white font-bold text-base",
-                "transition-colors duration-150",
+                "transition-all duration-150 shadow-[0_4px_16px_rgba(37,211,102,0.15)] hover:shadow-[0_4px_24px_rgba(37,211,102,0.3)]",
                 "active:scale-[0.98]"
               )}
             >
@@ -244,10 +289,7 @@ export default function QuoteDrawer({
               Enviar lista por WhatsApp
             </a>
 
-            {/*
-              Secondary CTA — keep browsing.
-              min-h-[44px]: minimum touch target even for a text button.
-            */}
+            {/* Secondary CTA — close drawer */}
             <button
               onClick={onClose}
               className={cn(
@@ -312,33 +354,46 @@ function QuoteItem({
   onIncrement: () => void
 }) {
   return (
-    <div className="bg-zinc-900 rounded-xl p-3 flex items-center gap-3 min-h-[72px]">
-      {/* Product icon thumbnail */}
-      <div
-        className="w-12 h-12 flex-shrink-0 bg-zinc-800 rounded-lg flex items-center justify-center"
-        aria-hidden="true"
-      >
-        <Wrench className="w-5 h-5 text-zinc-600" />
-      </div>
+    <div className="bg-zinc-900 rounded-xl p-3 flex items-center gap-3 min-h-[80px] border border-zinc-850/50">
+      {/* Product Image Thumbnail / Fallback (Pure visual interface) */}
+      {item.imageUrl ? (
+        <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden border border-zinc-800 bg-zinc-950">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={item.imageUrl}
+            alt=""
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
+        </div>
+      ) : (
+        <div
+          className="w-12 h-12 flex-shrink-0 bg-zinc-850 rounded-lg flex items-center justify-center border border-zinc-800"
+          aria-hidden="true"
+        >
+          <Wrench className="w-5 h-5 text-zinc-500" />
+        </div>
+      )}
 
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <p className="text-white text-sm font-semibold line-clamp-1">{item.name}</p>
-        <p className="text-zinc-400 text-xs mt-0.5">
+        <p className="text-white text-sm font-bold line-clamp-1 leading-tight">{item.name}</p>
+        <p className="text-zinc-400 text-[11px] mt-0.5 font-medium leading-none">
           {item.brand} · {item.category}
         </p>
 
         {/* Quantity stepper row */}
-        <div className="flex items-center gap-2 mt-2">
+        <div className="flex items-center gap-1.5 mt-2">
+          {/* Touch-safe button: visual size is 32px, outer relative allows easy touch */}
           <button
             onClick={onDecrement}
             aria-label={item.quantity === 1 ? `Eliminar ${item.name} de la lista` : `Disminuir cantidad de ${item.name}`}
-            className="bg-zinc-800 hover:bg-zinc-700 text-white rounded-full w-7 h-7 flex items-center justify-center text-xs transition-colors active:scale-90"
+            className="relative w-8 h-8 flex items-center justify-center rounded-lg bg-zinc-800 hover:bg-zinc-750 text-zinc-300 hover:text-white transition-all active:scale-90"
           >
-            <Minus className="w-3 h-3" />
+            <Minus className="w-3.5 h-3.5" />
           </button>
           <span
-            className="text-white font-bold text-sm w-5 text-center tabular-nums"
+            className="text-white font-bold text-sm w-7 text-center tabular-nums"
             aria-live="polite"
           >
             {item.quantity}
@@ -346,23 +401,20 @@ function QuoteItem({
           <button
             onClick={onIncrement}
             aria-label={`Aumentar cantidad de ${item.name}`}
-            className="bg-zinc-800 hover:bg-zinc-700 text-white rounded-full w-7 h-7 flex items-center justify-center text-xs transition-colors active:scale-90"
+            className="relative w-8 h-8 flex items-center justify-center rounded-lg bg-zinc-800 hover:bg-zinc-750 text-zinc-300 hover:text-white transition-all active:scale-90"
           >
-            <Plus className="w-3 h-3" />
+            <Plus className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
 
-      {/*
-        Remove button — 40×40 touch area (p-2 padding + w-9 h-9).
-        Meets minimum 44px when combined with surrounding padding.
-      */}
+      {/* Delete/Trash Button — intuitive trash icon, w-10 h-10 touch target */}
       <button
         onClick={onRemove}
         aria-label={`Eliminar ${item.name} de la lista`}
-        className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg text-zinc-600 hover:text-zinc-300 hover:bg-zinc-800 transition-colors"
+        className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-all active:scale-90"
       >
-        <X className="w-4 h-4" />
+        <Trash2 className="w-4 h-4" />
       </button>
     </div>
   )

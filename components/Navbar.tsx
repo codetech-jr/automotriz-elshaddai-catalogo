@@ -268,6 +268,12 @@ export default function Navbar() {
               Quiénes Somos
             </a>
             <a
+              href="/faq"
+              className="text-zinc-400 hover:text-white text-xs font-bold uppercase tracking-wider transition-colors duration-150"
+            >
+              FAQ
+            </a>
+            <a
               href="/contacto"
               className="text-zinc-400 hover:text-white text-xs font-bold uppercase tracking-wider transition-colors duration-150"
             >
@@ -330,6 +336,13 @@ export default function Navbar() {
             className="text-zinc-300 hover:text-white text-sm font-semibold uppercase tracking-wider transition-colors py-1 flex items-center gap-2"
           >
             <span>📍</span> Quiénes Somos
+          </a>
+          <a
+            href="/faq"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="text-zinc-300 hover:text-white text-sm font-semibold uppercase tracking-wider transition-colors py-1 flex items-center gap-2"
+          >
+            <span>❓</span> Preguntas Frecuentes
           </a>
           <a
             href="/contacto"

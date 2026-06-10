@@ -4,6 +4,7 @@ import './globals.css'
 import AnnouncementBar from '@/components/AnnouncementBar'
 import Navbar from '@/components/Navbar'
 import SiteFooter from '@/components/SiteFooter'
+import GoogleRatingBadge from '@/components/GoogleRatingBadge'
 // import BrandScrollBar from '@/components/BrandScrollBar'
 
 export const metadata: Metadata = {
@@ -41,6 +42,7 @@ export default function RootLayout({
         </header>
         {children}
         <SiteFooter />
+        <GoogleRatingBadge />
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

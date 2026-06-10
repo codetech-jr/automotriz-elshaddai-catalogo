@@ -23,6 +23,7 @@ import DemandBanner from "@/components/DemandBanner"
 import AuxilioBanner from "@/components/AuxilioBanner"
 import FloatingQuoteBar from "@/components/FloatingQuoteBar"
 import StoreLocation from "@/components/StoreLocation"
+import BrandScrollBar from "@/components/BrandScrollBar"
 
 // New modular UI components
 import CategoriesStrip from "@/components/CategoriesStrip"
@@ -177,6 +178,9 @@ export default function Home() {
 
       {/* ── Payment Trust Band (cognitive closure) ───────────────────── */}
       {/* <PaymentTrustBand /> */}
+
+      {/* ── BrandScrollBar ───────────────────────────────────────────── */}
+      <BrandScrollBar />
 
       {/* ── Floating WhatsApp FAB ────────────────────────────────────── */}
       <FloatingWhatsApp isHidden={isQuotePanelOpen} />

@@ -40,6 +40,7 @@ import {
 } from "@/lib/config"
 import { useQuoteStore } from "@/lib/quote-store"
 import FloatingQuoteBar from "@/components/FloatingQuoteBar"
+import QuoteDrawer from "@/components/QuoteDrawer"
 
 // ─── YMM Data ─────────────────────────────────────────────────────────────────
 const YMM_DATA: Record<string, Record<string, string[]>> = {
@@ -454,146 +455,7 @@ function ProductCard({
   )
 }
 
-// ============================================================
-// QUOTE LIST PANEL (Off-Canvas)
-// ============================================================
-function QuoteListPanel({
-  isOpen,
-  onClose,
-  quoteItems,
-  onRemoveFromQuote,
-  onUpdateQuantity,
-}: {
-  isOpen: boolean
-  onClose: () => void
-  quoteItems: QuoteItem[]
-  onRemoveFromQuote: (productId: string) => void
-  onUpdateQuantity: (productId: string, delta: number) => void
-}) {
-  const message = buildQuoteMessage(quoteItems)
-
-  useEffect(() => {
-    document.body.style.overflow = isOpen ? "hidden" : ""
-    return () => {
-      document.body.style.overflow = ""
-    }
-  }, [isOpen])
-
-  return (
-    <>
-      <div
-        className={`fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${
-          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
-        onClick={onClose}
-        aria-hidden="true"
-      />
-
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="quote-panel-title"
-        className={`fixed top-0 right-0 bottom-0 z-50 w-[90vw] max-w-[420px] bg-[#141414] flex flex-col shadow-2xl transition-transform duration-300 ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        }`}
-      >
-        {/* Header */}
-        <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-zinc-800">
-          <div>
-            <h2 id="quote-panel-title" className="text-white font-bold">Mi Lista de Cotización</h2>
-            <p className="text-zinc-400 text-xs">{quoteItems.length} producto(s)</p>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-zinc-400 hover:text-white transition-colors p-2"
-            aria-label="Cerrar panel"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Scroll Area */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3" aria-label="Lista de repuestos a cotizar">
-          {quoteItems.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center py-12">
-              <ShoppingCart className="w-16 h-16 text-zinc-800 mb-4" />
-              <p className="text-white font-medium">Tu lista está vacía</p>
-              <p className="text-zinc-400 text-sm mt-1">Busca repuestos en el catálogo y agrégalos</p>
-              <button
-                onClick={onClose}
-                className="mt-4 px-4 py-2 border border-zinc-800 text-zinc-400 rounded-lg hover:border-zinc-600 hover:text-white transition-colors"
-              >
-                Explorar repuestos
-              </button>
-            </div>
-          ) : (
-            quoteItems.map(item => (
-              <div key={item.id} className="bg-zinc-900 rounded-xl p-3 flex items-center gap-3">
-                <div className="w-12 h-12 bg-zinc-800 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Wrench className="w-5 h-5 text-zinc-600" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-white text-sm font-medium line-clamp-1">{item.name}</p>
-                  <p className="text-zinc-400 text-xs">{item.brand} · {item.category}</p>
-                  <div className="flex items-center gap-2 mt-1.5">
-                    <button
-                      onClick={() => (item.quantity === 1 ? onRemoveFromQuote(item.id) : onUpdateQuantity(item.id, -1))}
-                      className="bg-zinc-800 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-zinc-700 transition-colors"
-                      aria-label="Disminuir cantidad"
-                    >
-                      <Minus className="w-3 h-3" />
-                    </button>
-                    <span className="text-white font-bold text-sm w-5 text-center">{item.quantity}</span>
-                    <button
-                      onClick={() => onUpdateQuantity(item.id, 1)}
-                      className="bg-zinc-800 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-zinc-700 transition-colors"
-                      aria-label="Aumentar cantidad"
-                    >
-                      <Plus className="w-3 h-3" />
-                    </button>
-                  </div>
-                </div>
-                <button
-                  onClick={() => onRemoveFromQuote(item.id)}
-                  className="text-zinc-600 hover:text-zinc-400 transition-colors p-1"
-                  aria-label={`Eliminar ${item.name} de la lista`}
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            ))
-          )}
-        </div>
-
-        {/* Footer */}
-        {quoteItems.length > 0 && (
-          <div className="flex-shrink-0 border-t border-zinc-800 p-4 space-y-3">
-            <div className="bg-[#0f0f0f] rounded-xl p-3 max-h-24 overflow-y-auto">
-              <p className="text-zinc-600 text-[10px] uppercase tracking-wider mb-1">Mensaje a enviar:</p>
-              <p className="text-zinc-400 text-xs leading-relaxed whitespace-pre-line">{message}</p>
-            </div>
-            <a
-              href={buildWhatsAppURL(message)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-[#25D366] text-white font-bold py-4 rounded-xl w-full min-h-[56px] flex items-center justify-center gap-2 text-base hover:bg-[#1da851] transition-colors"
-              aria-label="Enviar lista de cotización por WhatsApp"
-            >
-              <MessageCircle className="w-5 h-5" />
-              Enviar lista por WhatsApp
-            </a>
-            <button
-              onClick={onClose}
-              className="text-zinc-400 text-sm py-2 w-full text-center hover:text-white transition-colors"
-            >
-              Seguir explorando
-            </button>
-          </div>
-        )}
-      </div>
-    </>
-  )
-}
+// QuoteListPanel has been consolidated into the centralized QuoteDrawer component.
 
 // ============================================================
 // FLOATING WHATSAPP FAB
@@ -907,11 +769,11 @@ function CatalogPageContent() {
       />
 
       {/* Off-canvas Quote Panel Drawer */}
-      <QuoteListPanel
+      <QuoteDrawer
         isOpen={isQuotePanelOpen}
         onClose={() => setIsQuotePanelOpen(false)}
         quoteItems={quoteItems}
-        onRemoveFromQuote={removeFromQuote}
+        onRemoveItem={removeFromQuote}
         onUpdateQuantity={updateQuantity}
       />
     </main>
