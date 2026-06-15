@@ -10,6 +10,11 @@ import { NextResponse, type NextRequest } from 'next/server'
  * 3. Redirigir usuarios ya logueados que intenten ir a /admin/login
  */
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
+  const isAdminLoginPage = pathname === '/admin/login'
+  const isAdminRoute = pathname.startsWith('/admin')
+
   let supabaseResponse = NextResponse.next({
     request,
   })
@@ -43,26 +48,28 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const { pathname } = request.nextUrl
-
   // ── Protección del Panel Admin ────────────────────────────────────────────
-  const isAdminRoute = pathname.startsWith('/admin')
-  const isAdminLoginPage = pathname === '/admin/login'
 
-  if (isAdminRoute && !isAdminLoginPage && !user) {
-    // Usuario no autenticado intentando acceder al admin → redirigir al login
+  // CASO 1: Ruta es /admin/login y NO hay sesión → dejar pasar (nunca redirigir)
+  if (isAdminLoginPage && !user) {
+    return supabaseResponse
+  }
+
+  // CASO 2: Ruta es /admin/login y SÍ hay sesión → redirigir al dashboard
+  if (isAdminLoginPage && user) {
+    const dashboardUrl = request.nextUrl.clone()
+    dashboardUrl.pathname = '/admin/products'
+    dashboardUrl.searchParams.delete('redirect')
+    return NextResponse.redirect(dashboardUrl)
+  }
+
+  // CASO 3: Ruta /admin/** (excepto /admin/login) y NO hay sesión → redirigir al login
+  if (isAdminRoute && !user) {
     const loginUrl = request.nextUrl.clone()
     loginUrl.pathname = '/admin/login'
     // Guardar la URL original para redirigir después del login
     loginUrl.searchParams.set('redirect', pathname)
     return NextResponse.redirect(loginUrl)
-  }
-
-  if (isAdminLoginPage && user) {
-    // Usuario ya autenticado intentando ir al login → redirigir al dashboard
-    const dashboardUrl = request.nextUrl.clone()
-    dashboardUrl.pathname = '/admin'
-    return NextResponse.redirect(dashboardUrl)
   }
 
   // IMPORTANTE: Retornar supabaseResponse (no NextResponse.next() directamente)

@@ -34,15 +34,47 @@ export async function createProduct(
     redirect('/admin/login')
   }
 
+  // Subida de imagen al storage de Supabase (bucket: product-images)
+  const imageFile = formData.get('image') as File | null
+  let imageUrl: string | null = null
+
+  if (imageFile && imageFile instanceof File && imageFile.size > 0) {
+    const fileExt = imageFile.name.split('.').pop()
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`
+    const filePath = `${fileName}`
+
+    const arrayBuffer = await imageFile.arrayBuffer()
+    const fileBuffer = new Uint8Array(arrayBuffer)
+
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('product-images')
+      .upload(filePath, fileBuffer, {
+        contentType: imageFile.type,
+        upsert: true
+      })
+
+    if (uploadError) {
+      console.error('[createProduct] Storage upload error:', uploadError)
+      return { success: false, error: 'No se pudo subir la imagen del producto.' }
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('product-images')
+      .getPublicUrl(filePath)
+
+    imageUrl = publicUrl
+  }
+
   const payload: Partial<InsertProduct> = {
     part_number:        (formData.get('part_number') as string)?.trim().toUpperCase(),
     name:               (formData.get('name') as string)?.trim(),
     category:           formData.get('category') as InsertProduct['category'],
     brand:              formData.get('brand') as InsertProduct['brand'],
+    model:              (formData.get('model') as string)?.trim() || null,
     condition:          formData.get('condition') as InsertProduct['condition'],
     stock_available:    formData.get('stock_available') === 'true',
     compatibility_text: (formData.get('compatibility_text') as string)?.trim() || null,
-    image_url:          (formData.get('image_url') as string)?.trim() || null,
+    image_url:          imageUrl,
     notes:              (formData.get('notes') as string)?.trim() || null,
     created_by:         user.id,
   }
@@ -93,14 +125,46 @@ export async function updateProduct(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/admin/login')
 
+  // Subida de imagen al storage de Supabase (bucket: product-images)
+  const imageFile = formData.get('image') as File | null
+  let imageUrl: string | null = (formData.get('image_url') as string)?.trim() || null
+
+  if (imageFile && imageFile instanceof File && imageFile.size > 0) {
+    const fileExt = imageFile.name.split('.').pop()
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`
+    const filePath = `${fileName}`
+
+    const arrayBuffer = await imageFile.arrayBuffer()
+    const fileBuffer = new Uint8Array(arrayBuffer)
+
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('product-images')
+      .upload(filePath, fileBuffer, {
+        contentType: imageFile.type,
+        upsert: true
+      })
+
+    if (uploadError) {
+      console.error('[updateProduct] Storage upload error:', uploadError)
+      return { success: false, error: 'No se pudo subir la imagen del producto.' }
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('product-images')
+      .getPublicUrl(filePath)
+
+    imageUrl = publicUrl
+  }
+
   const payload: UpdateProduct = {
     name:               (formData.get('name') as string)?.trim(),
     category:           formData.get('category') as InsertProduct['category'],
     brand:              formData.get('brand') as InsertProduct['brand'],
+    model:              (formData.get('model') as string)?.trim() || null,
     condition:          formData.get('condition') as InsertProduct['condition'],
     stock_available:    formData.get('stock_available') === 'true',
     compatibility_text: (formData.get('compatibility_text') as string)?.trim() || null,
-    image_url:          (formData.get('image_url') as string)?.trim() || null,
+    image_url:          imageUrl,
     notes:              (formData.get('notes') as string)?.trim() || null,
   }
 

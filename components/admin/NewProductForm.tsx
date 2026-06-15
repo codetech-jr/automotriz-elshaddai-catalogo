@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, Loader2, AlertCircle, CheckCircle2, UploadCloud } from 'lucide-react'
 import Link from 'next/link'
 import { createProduct } from '@/actions/product'
 import type { ProductCategory, ProductBrand, ProductCondition } from '@/lib/supabase/types'
@@ -21,6 +21,74 @@ const CONDITIONS: { value: ProductCondition; label: string; desc: string }[] = [
   { value: 'REMANUFACTURADO',label: 'Remanufacturado',desc: 'Reconstruido / reacondicionado' },
 ]
 
+// Mapping de marcas a sus modelos compatibles para la cascada de selección
+const VEHICLE_MAKES: Record<string, string[]> = {
+  Toyota: [
+    "Corolla 1.6 (Araya / Sky / Baby)",
+    "Corolla 1.8 (Araya / Sky / Baby)",
+    "Corolla Sensation 03-08",
+    "Corolla Explosion 09-11",
+    "Corolla 12-16 (Irani)",
+    "Corolla 12-16 (Nacional)",
+    "Corolla 12-16 (Importado)",
+    "Merú",
+    "Prado",
+    "4Runner (00-02+)",
+    "Fortuner",
+    "Hilux (2RZ / 3RZ)",
+    "Yaris Sol",
+    "Yaris Belta",
+    "Starlet",
+    "Terios 1.3 (Daihatsu)",
+    "Terios 1.5 (Daihatsu)"
+  ],
+  Chevrolet: [
+    "Corsa",
+    "Aveo",
+    "Optra",
+    "Spark",
+    "Montana",
+    "Meriva",
+    "Luv Dmax"
+  ],
+  Ford: [
+    "Fiesta (Power / Max / Move)",
+    "Explorer (Eddie Bauer / XLT)",
+    "EcoSport",
+    "Ka",
+    "Focus",
+    "F-150 (Fortaleza / FX4)",
+    "F-350 (Tritón)",
+    "Fusion",
+    "Laser"
+  ],
+  Hyundai: [
+    "Accent",
+    "Excel",
+    "Getz",
+    "Tucson"
+  ],
+  Daewoo: [
+    "Cielo",
+    "Lanos",
+    "Nubira"
+  ],
+  Volkswagen: [
+    "Gol",
+    "Crossfox",
+    "Golf"
+  ],
+  Chery: [
+    "Arauco 2015–2022",
+    "Tiggo 3 2016–2021",
+    "Orinoco 1.8",
+    "QQ 0.8"
+  ],
+  Universal: [
+    "Genérico / Todos"
+  ]
+}
+
 // ── Estilos compartidos ────────────────────────────────────────────────────────
 const INPUT_BASE = `
   w-full rounded-lg border border-white/[0.08] bg-white/[0.03]
@@ -38,6 +106,23 @@ export default function NewProductForm() {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+
+  // Estados para cascada de Marca -> Modelo
+  const [selectedBrand, setSelectedBrand] = useState<string>('')
+  const [selectedModel, setSelectedModel] = useState<string>('')
+
+  // Estados para Drag-and-Drop Image Preview
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+
+  const handleImageChange = (file: File | null) => {
+    if (file) {
+      const preview = URL.createObjectURL(file)
+      setImagePreview(preview)
+    } else {
+      setImagePreview(null)
+    }
+  }
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -110,7 +195,7 @@ export default function NewProductForm() {
 
         {/* Clasificación */}
         <Section title="Clasificación">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <Field label="Categoría *" htmlFor="category">
               <select
                 id="category"
@@ -130,13 +215,18 @@ export default function NewProductForm() {
                 ))}
               </select>
             </Field>
+
             <Field label="Marca *" htmlFor="brand">
               <select
                 id="brand"
                 name="brand"
                 required
                 className={INPUT_BASE}
-                defaultValue=""
+                value={selectedBrand}
+                onChange={(e) => {
+                  setSelectedBrand(e.target.value)
+                  setSelectedModel('') // Reset del modelo al cambiar la marca
+                }}
                 disabled={isPending || success}
               >
                 <option value="" disabled className="bg-[#111] text-white/40">
@@ -145,6 +235,27 @@ export default function NewProductForm() {
                 {BRANDS.map((b) => (
                   <option key={b} value={b} className="bg-[#111] text-white">
                     {b}
+                  </option>
+                ))}
+              </select>
+            </Field>
+
+            <Field label="Modelo *" htmlFor="model">
+              <select
+                id="model"
+                name="model"
+                required
+                className={INPUT_BASE}
+                value={selectedModel}
+                onChange={(e) => setSelectedModel(e.target.value)}
+                disabled={isPending || success || !selectedBrand}
+              >
+                <option value="" disabled className="bg-[#111] text-white/40">
+                  {selectedBrand ? 'Seleccionar…' : 'Primero elige marca'}
+                </option>
+                {(VEHICLE_MAKES[selectedBrand] || []).map((m) => (
+                  <option key={m} value={m} className="bg-[#111] text-white">
+                    {m}
                   </option>
                 ))}
               </select>
@@ -225,16 +336,94 @@ export default function NewProductForm() {
               disabled={isPending || success}
             />
           </Field>
-          <Field label="URL de Imagen" htmlFor="image_url">
-            <input
-              id="image_url"
-              name="image_url"
-              type="url"
-              placeholder="https://..."
-              className={INPUT_BASE}
-              disabled={isPending || success}
-            />
+
+          {/* Subida de Imagen Drag & Drop */}
+          <Field label="Imagen del Repuesto" htmlFor="image">
+            <div
+              className={`
+                relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed
+                p-6 transition-all duration-150 text-center cursor-pointer min-h-[160px]
+                ${isDragging 
+                  ? 'border-amber-500 bg-amber-500/5' 
+                  : 'border-white/[0.08] bg-white/[0.01] hover:border-white/[0.15] hover:bg-white/[0.03]'}
+              `}
+              onDragOver={(e) => {
+                e.preventDefault()
+                setIsDragging(true)
+              }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={(e) => {
+                e.preventDefault()
+                setIsDragging(false)
+                const file = e.dataTransfer.files?.[0]
+                if (file && file.type.startsWith('image/')) {
+                  const input = document.getElementById('image') as HTMLInputElement
+                  if (input) {
+                    const dataTransfer = new DataTransfer()
+                    dataTransfer.items.add(file)
+                    input.files = dataTransfer.files
+                    handleImageChange(file)
+                  }
+                }
+              }}
+              onClick={() => {
+                document.getElementById('image')?.click()
+              }}
+            >
+              <input
+                id="image"
+                name="image"
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                disabled={isPending || success}
+                onChange={(e) => {
+                  const file = e.target.files?.[0] || null
+                  handleImageChange(file)
+                }}
+              />
+
+              {imagePreview ? (
+                <div className="relative group w-full flex flex-col items-center justify-center gap-3">
+                  <div className="relative h-36 w-36 overflow-hidden rounded-lg border border-white/10 bg-[#0d0d12] flex items-center justify-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="max-h-full max-w-full object-contain"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      const input = document.getElementById('image') as HTMLInputElement
+                      if (input) input.value = ''
+                      setImagePreview(null)
+                    }}
+                    className="text-xs text-red-400 hover:text-red-300 underline"
+                  >
+                    Remover imagen
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center gap-2.5">
+                  <div className="rounded-full bg-white/[0.04] p-3 border border-white/[0.04]">
+                    <UploadCloud className="h-6 w-6 text-white/40" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-white/70">
+                      Arrastra una imagen o haz clic para adjuntar
+                    </p>
+                    <p className="text-xs text-white/30 mt-1">
+                      Soporta formatos PNG, JPG, JPEG o WEBP
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
           </Field>
+
           <Field label="Notas internas" htmlFor="notes">
             <textarea
               id="notes"
@@ -306,3 +495,4 @@ function Field({
     </div>
   )
 }
+

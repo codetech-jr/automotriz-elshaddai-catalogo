@@ -38,6 +38,7 @@ export interface DbProduct {
   compatible_models: string[] | null
   image_url: string | null
   image_urls: string[]
+  model: string | null
   price_usd: number | null
   price_bs: number | null
   notes: string | null
