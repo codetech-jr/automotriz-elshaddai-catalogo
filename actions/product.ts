@@ -20,6 +20,45 @@ function validateProductInput(data: Partial<InsertProduct>): string | null {
   return null
 }
 
+// Helper para subir múltiples imágenes a Supabase Storage
+async function uploadProductImages(
+  images: File[],
+  supabase: any
+): Promise<string[]> {
+  const uploadedUrls: string[] = []
+
+  for (const file of images) {
+    if (file && file instanceof File && file.size > 0) {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`
+      const filePath = `${fileName}`
+
+      const arrayBuffer = await file.arrayBuffer()
+      const fileBuffer = new Uint8Array(arrayBuffer)
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, fileBuffer, {
+          contentType: file.type,
+          upsert: true
+        })
+
+      if (uploadError) {
+        console.error('[uploadProductImages] Storage upload error:', uploadError)
+        throw new Error('No se pudo subir una de las imágenes del producto.')
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(filePath)
+
+      uploadedUrls.push(publicUrl)
+    }
+  }
+
+  return uploadedUrls
+}
+
 // =============================================================================
 // ACTION: Crear producto
 // =============================================================================
@@ -34,35 +73,14 @@ export async function createProduct(
     redirect('/admin/login')
   }
 
-  // Subida de imagen al storage de Supabase (bucket: product-images)
-  const imageFile = formData.get('image') as File | null
-  let imageUrl: string | null = null
+  // Subida de múltiples imágenes al storage de Supabase (bucket: product-images)
+  const images = formData.getAll('images') as File[]
+  let uploadedUrls: string[] = []
 
-  if (imageFile && imageFile instanceof File && imageFile.size > 0) {
-    const fileExt = imageFile.name.split('.').pop()
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`
-    const filePath = `${fileName}`
-
-    const arrayBuffer = await imageFile.arrayBuffer()
-    const fileBuffer = new Uint8Array(arrayBuffer)
-
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('product-images')
-      .upload(filePath, fileBuffer, {
-        contentType: imageFile.type,
-        upsert: true
-      })
-
-    if (uploadError) {
-      console.error('[createProduct] Storage upload error:', uploadError)
-      return { success: false, error: 'No se pudo subir la imagen del producto.' }
-    }
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('product-images')
-      .getPublicUrl(filePath)
-
-    imageUrl = publicUrl
+  try {
+    uploadedUrls = await uploadProductImages(images, supabase)
+  } catch (err: any) {
+    return { success: false, error: err.message }
   }
 
   const payload: Partial<InsertProduct> = {
@@ -74,7 +92,8 @@ export async function createProduct(
     condition:          formData.get('condition') as InsertProduct['condition'],
     stock_available:    formData.get('stock_available') === 'true',
     compatibility_text: (formData.get('compatibility_text') as string)?.trim() || null,
-    image_url:          imageUrl,
+    image_url:          uploadedUrls[0] || null,
+    image_urls:         uploadedUrls,
     notes:              (formData.get('notes') as string)?.trim() || null,
     created_by:         user.id,
   }
@@ -118,53 +137,73 @@ export async function createProduct(
 // =============================================================================
 export async function updateProduct(
   id: string,
-  formData: FormData
+  formData: FormData,
+  imagePath?: string // Kept for backward compatibility
 ): Promise<ActionResult> {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/admin/login')
 
-  // Subida de imagen al storage de Supabase (bucket: product-images)
-  const imageFile = formData.get('image') as File | null
-  let imageUrl: string | null = (formData.get('image_url') as string)?.trim() || null
+  // 1. Obtener el producto actual para robustez y fallback de imágenes
+  const { data: currentProduct, error: fetchError } = await supabase
+    .from('products')
+    .select('image_url, image_urls, category, brand, condition, stock_qty, model')
+    .eq('id', id)
+    .single()
 
-  if (imageFile && imageFile instanceof File && imageFile.size > 0) {
-    const fileExt = imageFile.name.split('.').pop()
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`
-    const filePath = `${fileName}`
+  if (fetchError) {
+    console.error('[updateProduct] Error fetching current product:', fetchError)
+  }
 
-    const arrayBuffer = await imageFile.arrayBuffer()
-    const fileBuffer = new Uint8Array(arrayBuffer)
-
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('product-images')
-      .upload(filePath, fileBuffer, {
-        contentType: imageFile.type,
-        upsert: true
-      })
-
-    if (uploadError) {
-      console.error('[updateProduct] Storage upload error:', uploadError)
-      return { success: false, error: 'No se pudo subir la imagen del producto.' }
+  // Obtener imágenes existentes restantes de la edición
+  const existingImagesRaw = formData.get('existing_images') as string | null
+  let existingUrls: string[] = []
+  if (existingImagesRaw) {
+    try {
+      const parsed = JSON.parse(existingImagesRaw)
+      if (Array.isArray(parsed)) {
+        existingUrls = parsed.filter((url): url is string => typeof url === 'string' && url.trim().length > 0)
+      }
+    } catch (e) {
+      console.error('[updateProduct] Error parsing existing_images:', e)
     }
+  }
 
-    const { data: { publicUrl } } = supabase.storage
-      .from('product-images')
-      .getPublicUrl(filePath)
+  // Subida de nuevas imágenes al storage
+  const newImages = formData.getAll('images') as File[]
+  let uploadedUrls: string[] = []
 
-    imageUrl = publicUrl
+  try {
+    uploadedUrls = await uploadProductImages(newImages, supabase)
+  } catch (err: any) {
+    return { success: false, error: err.message }
+  }
+
+  // Combinar imágenes existentes y nuevas
+  let finalUrls = [...existingUrls, ...uploadedUrls]
+
+  // Si el producto ya tenía imágenes en Supabase y el usuario no subió fotos nuevas en esta edición,
+  // y el resultado final de imágenes es vacío, conservamos las imágenes previas de la base de datos
+  if (uploadedUrls.length === 0 && finalUrls.length === 0 && currentProduct) {
+    if (Array.isArray(currentProduct.image_urls) && currentProduct.image_urls.length > 0) {
+      finalUrls = currentProduct.image_urls
+    } else if (currentProduct.image_url) {
+      finalUrls = [currentProduct.image_url]
+    }
   }
 
   const payload: UpdateProduct = {
+    part_number:        (formData.get('part_number') as string)?.trim().toUpperCase(),
     name:               (formData.get('name') as string)?.trim(),
-    category:           formData.get('category') as InsertProduct['category'],
+    category:           (formData.get('category') as string)?.trim() || '',
     brand:              formData.get('brand') as InsertProduct['brand'],
     model:              (formData.get('model') as string)?.trim() || null,
     condition:          formData.get('condition') as InsertProduct['condition'],
     stock_available:    formData.get('stock_available') === 'true',
     compatibility_text: (formData.get('compatibility_text') as string)?.trim() || null,
-    image_url:          imageUrl,
+    image_url:          finalUrls[0] || null,
+    image_urls:         finalUrls, // Enviado estrictamente como un Array de JavaScript (string[])
     notes:              (formData.get('notes') as string)?.trim() || null,
   }
 
@@ -173,13 +212,21 @@ export async function updateProduct(
     payload.stock_qty = Number(stockQtyRaw)
   }
 
+  // Validación server-side
+  const validationError = validateProductInput(payload)
+  if (validationError) {
+    return { success: false, error: validationError }
+  }
+
   const { error } = await supabase
     .from('products')
     .update(payload)
     .eq('id', id)
-    .eq('is_active', true) // Solo actualizar productos activos
 
   if (error) {
+    if (error.code === '23505') {
+      return { success: false, error: `El número de parte "${payload.part_number}" ya existe.` }
+    }
     console.error('[updateProduct] Supabase error:', error)
     return { success: false, error: 'No se pudo actualizar el producto.' }
   }
@@ -187,14 +234,18 @@ export async function updateProduct(
   revalidatePath('/admin/products')
   revalidatePath(`/admin/products/${id}`)
   revalidatePath('/catalogo')
+  revalidatePath('/', 'layout')
 
   return { success: true, data: undefined }
 }
 
 // =============================================================================
-// ACTION: Soft-delete (desactivar producto)
+// ACTION: Cambiar estado activo/oculto (Soft-delete / Reactivar)
 // =============================================================================
-export async function deactivateProduct(id: string): Promise<ActionResult> {
+export async function toggleProductStatus(
+  id: string,
+  currentStatus: boolean
+): Promise<ActionResult> {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -202,16 +253,45 @@ export async function deactivateProduct(id: string): Promise<ActionResult> {
 
   const { error } = await supabase
     .from('products')
-    .update({ is_active: false })
+    .update({ is_active: !currentStatus })
     .eq('id', id)
 
   if (error) {
-    console.error('[deactivateProduct] Supabase error:', error)
-    return { success: false, error: 'No se pudo desactivar el producto.' }
+    console.error('[toggleProductStatus] Supabase error:', error)
+    return { success: false, error: 'No se pudo cambiar el estado del producto.' }
   }
 
   revalidatePath('/admin/products')
   revalidatePath('/catalogo')
+  revalidatePath('/')
+  revalidatePath('/', 'layout')
+
+  return { success: true, data: undefined }
+}
+
+// =============================================================================
+// ACTION: Eliminar producto definitivamente (Hard-delete)
+// =============================================================================
+export async function deleteProductPermanently(id: string): Promise<ActionResult> {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/admin/login')
+
+  const { error } = await supabase
+    .from('products')
+    .delete()
+    .eq('id', id)
+
+  if (error) {
+    console.error('[deleteProductPermanently] Supabase error:', error)
+    return { success: false, error: 'No se pudo eliminar el producto definitivamente.' }
+  }
+
+  revalidatePath('/admin/products')
+  revalidatePath('/catalogo')
+  revalidatePath('/')
+  revalidatePath('/', 'layout')
 
   return { success: true, data: undefined }
 }
@@ -250,3 +330,41 @@ export async function signOut() {
   await supabase.auth.signOut()
   redirect('/admin/login')
 }
+
+// =============================================================================
+// ACTION: Crear categoría
+// =============================================================================
+export async function createCategory(name: string): Promise<ActionResult> {
+  const supabase = await createClient()
+
+  // Verificar sesión activa
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    redirect('/admin/login')
+  }
+
+  const trimmedName = name?.trim()
+  if (!trimmedName) {
+    return { success: false, error: 'El nombre de la categoría es requerido.' }
+  }
+
+  const { error } = await supabase
+    .from('product_categories')
+    .insert({ name: trimmedName })
+
+  if (error) {
+    if (error.code === '23505') {
+      return { success: false, error: `La categoría "${trimmedName}" ya existe.` }
+    }
+    console.error('[createCategory] Supabase error:', error)
+    return { success: false, error: 'No se pudo crear la categoría. Intente nuevamente.' }
+  }
+
+  revalidatePath('/admin/settings')
+  revalidatePath('/admin/products')
+  revalidatePath('/admin/products/new')
+  revalidatePath('/catalogo')
+
+  return { success: true, data: undefined }
+}
+

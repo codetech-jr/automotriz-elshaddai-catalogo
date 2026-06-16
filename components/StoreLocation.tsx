@@ -16,13 +16,14 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState } from "react"
-import { MapPin, Clock, MessageCircle } from "lucide-react"
+import { MapPin, Clock, MessageCircle, Map, Play } from "lucide-react"
 import { BUSINESS, buildWhatsAppURL } from "@/lib/config"
 
 export default function StoreLocation() {
   // Scroll Trap Prevention: tracks whether the user has explicitly unlocked
   // the map on mobile. Starts locked (false) — overlay prevents accidental scroll capture.
   const [mapUnlocked, setMapUnlocked] = useState(false)
+  const [view, setView] = useState<'map' | 'video'>('map')
 
   const whatsappMessage = "¡Hola! Quisiera recibir asesoría inmediata y confirmar la dirección física de la tienda en Charallave."
   const whatsappUrl = buildWhatsAppURL(whatsappMessage)
@@ -181,73 +182,124 @@ export default function StoreLocation() {
             This is equivalent to Google Maps' own "Use Ctrl+Scroll to zoom the map"
             pattern, adapted for the touch-swipe paradigm.
           */}
-          <div className="relative h-[350px] lg:h-auto min-h-[350px] bg-[var(--surface-card,#141414)] rounded-2xl border border-[var(--surface-border,#27272a)] overflow-hidden shadow-[0_4px_30px_rgba(0,0,0,0.4)] transition-all duration-300 hover:border-zinc-700 group">
-            {/* Dark Mode Google Map Iframe */}
-            <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3926.210187519597!2d-66.8606823!3d10.244625100000002!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8c2aef4dcaae143d%3A0x1371618808ce1fba!2sAUTOMOTRIZ%20EL%20SHADDAI!5e0!3m2!1ses!2sve!4v1780070207258!5m2!1ses!2sve"
-              width="100%"
-              height="100%"
-              style={{ 
-                border: 0, 
-                filter: "grayscale(1) invert(0.9) contrast(1.1) brightness(0.9)"
-              }}
-              allowFullScreen={true}
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              className="w-full h-full opacity-80 group-hover:opacity-95 transition-opacity duration-300"
-              title="Ubicación de Automotriz El Shaddai en Google Maps"
-            />
-            
-            {/*
-              Touch Blocker Overlay (mobile only).
-              • Visible by default on touch devices via md:hidden.
-              • Disappears after user explicitly taps "Desbloquear mapa".
-              • On desktop (md+) always pointer-events-none and invisible.
-              • Uses a dark glassmorphic layer so the map is still visible
-                behind it — user knows what they're activating.
-            */}
-            {!mapUnlocked && (
-              <div
-                className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 cursor-pointer md:hidden"
-                style={{ background: "rgba(10,10,10,0.65)", backdropFilter: "blur(2px)" }}
-                onClick={() => setMapUnlocked(true)}
-                aria-label="Activar el mapa interactivo"
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => e.key === "Enter" && setMapUnlocked(true)}
+          {/* Columna Derecha (Widget de Ubicación Dual: Mapa / Video) */}
+          <div className="flex flex-col h-full min-h-[400px]">
+            {/* Pestañas de Navegación */}
+            <div className="flex border-b border-white/[0.06] gap-2 mb-4 shrink-0">
+              <button
+                type="button"
+                onClick={() => setView('map')}
+                className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-all duration-200 border-b-2 cursor-pointer focus:outline-none ${
+                  view === 'map'
+                    ? 'text-amber-400 border-amber-500 bg-amber-500/5'
+                    : 'text-white/40 border-transparent hover:text-white/70 hover:bg-white/[0.01]'
+                }`}
               >
-                {/* Padlock icon */}
-                <div className="w-14 h-14 rounded-2xl bg-zinc-900/90 border border-zinc-700/60 flex items-center justify-center shadow-lg">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-7 h-7 text-amber-400" aria-hidden="true">
-                    <rect x="5" y="11" width="14" height="10" rx="2" ry="2" />
-                    <path d="M8 11V7a4 4 0 0 1 8 0v4" />
-                  </svg>
-                </div>
-                <div className="text-center px-4">
-                  <p className="text-white text-sm font-bold leading-tight">Toca para activar el mapa</p>
-                  <p className="text-zinc-400 text-xs mt-1 leading-snug">Usa dos dedos para desplazarte sin activar el mapa</p>
-                </div>
-                <button
-                  className="mt-1 px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-sm font-bold transition-colors min-h-[44px] shadow-[0_4px_16px_rgba(217,119,6,0.35)]"
-                  onClick={(e) => { e.stopPropagation(); setMapUnlocked(true); }}
-                  aria-label="Desbloquear mapa interactivo"
-                >
-                  🗺️ Desbloquear mapa
-                </button>
-              </div>
-            )}
+                <Map className="w-3.5 h-3.5" />
+                Ver Mapa GPS
+              </button>
+              <button
+                type="button"
+                onClick={() => setView('video')}
+                className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-all duration-200 border-b-2 cursor-pointer focus:outline-none ${
+                  view === 'video'
+                    ? 'text-amber-400 border-amber-500 bg-amber-500/5'
+                    : 'text-white/40 border-transparent hover:text-white/70 hover:bg-white/[0.01]'
+                }`}
+              >
+                <Play className="w-3.5 h-3.5" />
+                Video: Cómo Llegar
+              </button>
+            </div>
 
-            {/* Glassmorphic Map Control Indicator Overlay */}
-            <div className="absolute bottom-4 left-4 right-4 bg-black/60 backdrop-blur-md border border-zinc-800/80 rounded-xl p-3 flex items-center justify-between pointer-events-none transition-all duration-300 group-hover:-translate-y-1">
-              <div className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-[#25D366] animate-pulse" />
-                <span className="text-[11px] text-zinc-300 font-semibold tracking-wide uppercase">
-                  Valles del Tuy, Miranda
-                </span>
-              </div>
-              <span className="text-[10px] text-zinc-500">
-                Mapa Interactivo
-              </span>
+            {/* Contenedor del contenido */}
+            <div className="relative flex-1 min-h-[350px] bg-[var(--surface-card,#141414)] rounded-2xl border border-[var(--surface-border,#27272a)] overflow-hidden shadow-[0_4px_30px_rgba(0,0,0,0.4)] transition-all duration-300 hover:border-zinc-700 group">
+              {view === 'map' ? (
+                <>
+                  {/* Dark Mode Google Map Iframe */}
+                  <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3926.210187519597!2d-66.8606823!3d10.244625100000002!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8c2aef4dcaae143d%3A0x1371618808ce1fba!2sAUTOMOTRIZ%20EL%20SHADDAI!5e0!3m2!1ses!2sve!4v1780070207258!5m2!1ses!2sve"
+                    width="100%"
+                    height="100%"
+                    style={{ 
+                      border: 0, 
+                      filter: "grayscale(1) invert(0.9) contrast(1.1) brightness(0.9)"
+                    }}
+                    allowFullScreen={true}
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    className="w-full h-full opacity-80 group-hover:opacity-95 transition-opacity duration-300"
+                    title="Ubicación de Automotriz El Shaddai en Google Maps"
+                  />
+                  
+                  {/* Touch Blocker Overlay (mobile only) */}
+                  {!mapUnlocked && (
+                    <div
+                      className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 cursor-pointer md:hidden"
+                      style={{ background: "rgba(10,10,10,0.65)", backdropFilter: "blur(2px)" }}
+                      onClick={() => setMapUnlocked(true)}
+                      aria-label="Activar el mapa interactivo"
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => e.key === "Enter" && setMapUnlocked(true)}
+                    >
+                      {/* Padlock icon */}
+                      <div className="w-14 h-14 rounded-2xl bg-zinc-900/90 border border-zinc-700/60 flex items-center justify-center shadow-lg">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-7 h-7 text-amber-400" aria-hidden="true">
+                          <rect x="5" y="11" width="14" height="10" rx="2" ry="2" />
+                          <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                        </svg>
+                      </div>
+                      <div className="text-center px-4">
+                        <p className="text-white text-sm font-bold leading-tight">Toca para activar el mapa</p>
+                        <p className="text-zinc-400 text-xs mt-1 leading-snug">Usa dos dedos para desplazarte sin activar el mapa</p>
+                      </div>
+                      <button
+                        className="mt-1 px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-sm font-bold transition-colors min-h-[44px] shadow-[0_4px_16px_rgba(217,119,6,0.35)]"
+                        onClick={(e) => { e.stopPropagation(); setMapUnlocked(true); }}
+                        aria-label="Desbloquear mapa interactivo"
+                      >
+                        🗺️ Desbloquear mapa
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Glassmorphic Map Control Indicator Overlay */}
+                  <div className="absolute bottom-4 left-4 right-4 bg-black/60 backdrop-blur-md border border-zinc-800/80 rounded-xl p-3 flex items-center justify-between pointer-events-none transition-all duration-300 group-hover:-translate-y-1">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#25D366] animate-pulse" />
+                      <span className="text-[11px] text-zinc-300 font-semibold tracking-wide uppercase">
+                        Valles del Tuy, Miranda
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-zinc-500">
+                      Mapa Interactivo
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <div className="relative w-full h-full bg-[#0a0a0a] flex flex-col justify-center">
+                  <video
+                    src="/como-llegar.mp4"
+                    controls
+                    playsInline
+                    preload="metadata"
+                    className="w-full h-full object-cover opacity-90 hover:opacity-100 transition-opacity duration-300"
+                  />
+                  {/* Glassmorphic Video Control Indicator Overlay */}
+                  <div className="absolute bottom-4 left-4 right-4 bg-black/60 backdrop-blur-md border border-zinc-800/80 rounded-xl p-3 flex items-center justify-between pointer-events-none transition-all duration-300 group-hover:-translate-y-1">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
+                      <span className="text-[11px] text-zinc-300 font-semibold tracking-wide uppercase">
+                        Ruta desde Redoma de Charallave
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-zinc-500">
+                      Video de Recorrido
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

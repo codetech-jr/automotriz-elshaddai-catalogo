@@ -34,9 +34,9 @@ export default async function ProductsPage() {
       stock_available,
       stock_qty,
       image_url,
-      created_at
+      created_at,
+      is_active
     `)
-    .eq('is_active', true)
     .order('created_at', { ascending: false })
 
   // ── Estadísticas rápidas ───────────────────────────────────────────────────

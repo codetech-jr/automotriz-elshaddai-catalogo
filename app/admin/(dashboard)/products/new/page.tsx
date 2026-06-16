@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import NewProductForm from '@/components/admin/NewProductForm'
+import ProductForm from '@/components/admin/ProductForm'
 
 export const metadata: Metadata = { title: 'Nuevo Repuesto' }
 
@@ -10,6 +10,12 @@ export default async function NewProductPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/admin/login')
+
+  // Fetch categories
+  const { data: categoriesData } = await supabase
+    .from('product_categories')
+    .select('id, name')
+    .order('name', { ascending: true })
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -24,7 +30,8 @@ export default async function NewProductPage() {
       </div>
 
       {/* Formulario Client Component */}
-      <NewProductForm />
+      <ProductForm categories={categoriesData || []} />
     </div>
   )
 }
+

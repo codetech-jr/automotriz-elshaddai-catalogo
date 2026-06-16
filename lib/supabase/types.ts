@@ -29,7 +29,7 @@ export interface DbProduct {
   id: string
   part_number: string
   name: string
-  category: ProductCategory
+  category: string
   brand: ProductBrand
   condition: ProductCondition
   stock_available: boolean
@@ -71,3 +71,14 @@ export type PublicProduct = Pick<DbProduct,
   | 'compatible_models'
   | 'image_url'
 >
+
+export interface DbStoreSettings {
+  id: number
+  whatsapp_number: string
+  whatsapp_greeting: string
+  store_address: string
+  is_emergency_banner_active: boolean
+  created_at?: string
+  updated_at?: string
+}
+

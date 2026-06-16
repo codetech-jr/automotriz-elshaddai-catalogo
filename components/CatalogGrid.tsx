@@ -33,6 +33,8 @@ import { ArrowRight } from "lucide-react"
 // ── Props ──────────────────────────────────────────────────────────────────────
 
 export interface CatalogGridProps {
+  /** Optional products list fetched from server */
+  products?: Product[]
   /** How many products to show (defaults to 8 for homepage featured section) */
   limit?: number
   /** Optional category label to filter (null = all) */
@@ -54,6 +56,7 @@ export interface CatalogGridProps {
 // ── Component ──────────────────────────────────────────────────────────────────
 
 export default function CatalogGrid({
+  products,
   limit = 8,
   filterCategory = null,
   filterBrand = null,
@@ -65,8 +68,8 @@ export default function CatalogGrid({
   subheading = "Una cuidada selección de nuestras mejores piezas originales y alternativas de alta calidad para Chery, Toyota, Ford y Chevrolet.",
   className,
 }: CatalogGridProps) {
-  // ── Data filtering (lib/data.ts is the single source) ──
-  const allProducts = SAMPLE_PRODUCTS
+  // ── Data filtering (use prop if provided, else fallback to static SAMPLE_PRODUCTS) ──
+  const allProducts = products || SAMPLE_PRODUCTS
 
   const filteredProducts = allProducts.filter((p) => {
     if (filterCategory && p.category.toLowerCase() !== filterCategory.toLowerCase()) return false

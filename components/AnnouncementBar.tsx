@@ -12,10 +12,16 @@
 import { Zap, Truck } from "lucide-react"
 import { buildWhatsAppURL } from "@/lib/config"
 
-export default function AnnouncementBar() {
+interface AnnouncementBarProps {
+  whatsappNumber?: string
+}
+
+export default function AnnouncementBar({ whatsappNumber }: AnnouncementBarProps) {
   const whatsappUrl = buildWhatsAppURL(
-    "Hola, necesito Auxilio Vial. ¿Me pueden llevar un repuesto a donde estoy?"
+    "Hola, necesito Auxilio Vial. ¿Me pueden llevar un repuesto a donde estoy?",
+    whatsappNumber
   )
+
 
   return (
     <div className="w-full bg-gradient-to-r from-[#120e06] via-[#1c140a] to-[#120e06] border-b border-amber-500/10 text-center py-2 px-4 select-none">

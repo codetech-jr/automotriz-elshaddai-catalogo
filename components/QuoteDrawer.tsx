@@ -30,7 +30,7 @@
 //   • Desktop: capped at max-w-[440px] → feels like a sidebar panel
 // ─────────────────────────────────────────────────────────────────────────────
 import { useEffect, useRef, useState } from "react"
-import { MessageCircle, Minus, Plus, ShoppingCart, Wrench, X, Trash2 } from "lucide-react"
+import { MessageCircle, Minus, Plus, ShoppingCart, Wrench, X, Trash2, Smartphone, Building2, DollarSign, Coins } from "lucide-react"
 import { buildWhatsAppURL, buildQuoteMessage, type QuoteItem } from "@/lib/config"
 import { cn } from "@/lib/utils"
 import TestimonialTrustBanner from "@/components/TestimonialTrustBanner"
@@ -45,6 +45,50 @@ export interface QuoteDrawerProps {
   onUpdateQuantity: (productId: string, delta: number) => void
 }
 
+// ── Payment Methods Constant ──────────────────────────────────────────────────
+const PAYMENT_METHODS = {
+  pago_movil: {
+    label: "Pago Móvil",
+    name: "Pago Móvil (Bancamiga)",
+    icon: Smartphone,
+    details: [
+      { label: "Banco", value: "Bancamiga (0172)" },
+      { label: "C.I.", value: "25.845.201" },
+      { label: "Telf.", value: "0414-792-70-59" }
+    ]
+  },
+  transferencia: {
+    label: "Transferencia",
+    name: "Transferencia (Bancamiga)",
+    icon: Building2,
+    details: [
+      { label: "Banco", value: "Bancamiga" },
+      { label: "Tipo", value: "Cuenta Corriente" },
+      { label: "Cuenta", value: "0172-0111-22-3333333333" },
+      { label: "R.I.F.", value: "J-25845201-0" },
+      { label: "Titular", value: "Automotriz El Shaddai C.A." }
+    ]
+  },
+  efectivo: {
+    label: "Efectivo",
+    name: "Efectivo",
+    icon: DollarSign,
+    details: [
+      { label: "Condición", value: "Pago en tienda física en Charallave o al recibir (Delivery)" }
+    ]
+  },
+  binance: {
+    label: "Binance Pay",
+    name: "Binance Pay (USDT)",
+    icon: Coins,
+    details: [
+      { label: "Binance ID", value: "48201594" },
+      { label: "Email", value: "pagos@elshaddai.com" },
+      { label: "Moneda", value: "USDT" }
+    ]
+  }
+} as const;
+
 // ── Component ──────────────────────────────────────────────────────────────────
 
 export default function QuoteDrawer({
@@ -58,6 +102,9 @@ export default function QuoteDrawer({
   
   // State for YMM vehicle verification input (fricción positiva / CRO)
   const [vehicleInfo, setVehicleInfo] = useState("")
+
+  // State to control selected payment method
+  const [selectedPayment, setSelectedPayment] = useState<'pago_movil' | 'transferencia' | 'efectivo' | 'binance'>('pago_movil')
 
   // State for dynamic business hours logic (avoids server-side hydration mismatches)
   const [isBusinessHours, setIsBusinessHours] = useState<boolean | null>(null)
@@ -76,13 +123,18 @@ export default function QuoteDrawer({
   }, [])
 
   // Dynamic behind-the-scenes string building and URL compilation
-  const message = buildQuoteMessage(quoteItems, vehicleInfo)
+  let message = buildQuoteMessage(quoteItems, vehicleInfo)
+  if (selectedPayment) {
+    const paymentLabel = PAYMENT_METHODS[selectedPayment].name
+    message += `\n\n*Método de Pago Preferido:* ${paymentLabel}`
+  }
   const waUrl = buildWhatsAppURL(message)
 
-  // Reset vehicleInfo on drawer close
+  // Reset vehicleInfo and selectedPayment on drawer close
   useEffect(() => {
     if (!isOpen) {
       setVehicleInfo("")
+      setSelectedPayment("pago_movil")
     }
   }, [isOpen])
 
@@ -214,6 +266,46 @@ export default function QuoteDrawer({
                   placeholder="Ej: Toyota Corolla 2015, Arauco 2018..."
                   className="w-full bg-[#0d0d0d] border border-zinc-800 focus:border-amber-500/80 rounded-xl px-3.5 py-3 text-xs text-white placeholder-zinc-650 outline-none transition-all focus:ring-1 focus:ring-amber-500/20"
                 />
+              </div>
+
+              {/* Payment Methods Section */}
+              <div className="space-y-1.5 pt-3 border-t border-zinc-900">
+                <label className="block text-xs font-bold text-zinc-300 select-none leading-snug">
+                  Método de Pago Preferido:
+                </label>
+                <div className="grid grid-cols-4 gap-2 mb-3">
+                  {(Object.keys(PAYMENT_METHODS) as Array<keyof typeof PAYMENT_METHODS>).map((key) => {
+                    const method = PAYMENT_METHODS[key]
+                    const Icon = method.icon
+                    const isActive = selectedPayment === key
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => setSelectedPayment(key)}
+                        className={cn(
+                          "flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl border text-[10px] font-semibold transition-all min-h-[56px] focus:outline-none",
+                          isActive
+                            ? "border-[var(--accent-primary)] bg-amber-600/5 text-[var(--accent-primary)]"
+                            : "border-zinc-800 bg-[#0d0d0d] text-zinc-500 hover:text-zinc-300 hover:border-zinc-700"
+                        )}
+                      >
+                        <Icon className="w-4 h-4" />
+                        <span className="text-[10px] tracking-tight text-center leading-none">
+                          {method.label}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+                <div className="bg-surface-raised border border-zinc-800/80 p-3.5 rounded-xl text-xs space-y-1.5">
+                  {PAYMENT_METHODS[selectedPayment].details.map((detail, index) => (
+                    <div key={index} className="flex justify-between items-start gap-4">
+                      <span className="text-zinc-500 font-medium">{detail.label}:</span>
+                      <span className="text-white font-semibold text-right break-all">{detail.value}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               {/* Static Trust Badges (CRO & Trust building) */}

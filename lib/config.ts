@@ -51,6 +51,7 @@ export interface Product {
   compatibility: string
   sku: string
   imageUrl?: string
+  image_urls?: string[]
 }
 
 export const SAMPLE_PRODUCTS: Product[] = [
@@ -84,9 +85,9 @@ export interface QuoteItem {
 }
 
 // Build WhatsApp URL with pre-filled message
-export function buildWhatsAppURL(message: string): string {
+export function buildWhatsAppURL(message: string, phone: string = BUSINESS.phone): string {
   const encoded = encodeURIComponent(message)
-  return `https://wa.me/${BUSINESS.phone}?text=${encoded}`
+  return `https://wa.me/${phone}?text=${encoded}`
 }
 
 // Build quote message from list of items, optionally including vehicle details

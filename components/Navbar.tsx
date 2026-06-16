@@ -277,7 +277,7 @@ export default function Navbar() {
               href="/contacto"
               className="text-zinc-400 hover:text-white text-xs font-bold uppercase tracking-wider transition-colors duration-150"
             >
-              Contacto
+              Contacto y Ubicación
             </a>
           </div>
 
@@ -349,7 +349,7 @@ export default function Navbar() {
             onClick={() => setIsMobileMenuOpen(false)}
             className="text-zinc-300 hover:text-white text-sm font-semibold uppercase tracking-wider transition-colors py-1 flex items-center gap-2"
           >
-            <span>📞</span> Contacto
+            <span>📞</span> Contacto y Ubicación
           </a>
         </div>
       )}

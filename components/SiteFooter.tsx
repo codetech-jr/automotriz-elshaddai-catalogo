@@ -9,9 +9,16 @@
 
 import { Instagram, Facebook, MapPin, Phone, ChevronRight, ShieldCheck, CreditCard } from "lucide-react"
 import { BUSINESS, buildWhatsAppURL } from "@/lib/config"
+import type { DbStoreSettings } from "@/lib/supabase/types"
 
-export default function SiteFooter() {
-  const whatsappUrl = buildWhatsAppURL("Hola, quisiera hacer una consulta desde la web.")
+interface SiteFooterProps {
+  settings?: DbStoreSettings
+}
+
+export default function SiteFooter({ settings }: SiteFooterProps) {
+  const phone = settings?.whatsapp_number || BUSINESS.phone
+  const address = settings?.store_address || BUSINESS.address
+  const whatsappUrl = buildWhatsAppURL("Hola, quisiera hacer una consulta desde la web.", phone)
 
   return (
     <footer className="relative bg-[#0a0a0a] border-t border-zinc-900 pt-16 pb-8 overflow-hidden max-w-full">
@@ -88,7 +95,7 @@ export default function SiteFooter() {
               <li className="flex flex-col md:flex-row items-center md:items-start justify-center md:justify-start gap-2 md:gap-3 text-sm">
                 <MapPin className="w-5 h-5 text-zinc-500 flex-shrink-0 md:mt-0.5" />
                 <span className="text-zinc-400 leading-relaxed max-w-[260px] md:max-w-none text-center md:text-left">
-                  {BUSINESS.location}
+                  {address}
                 </span>
               </li>
               <li>
@@ -97,7 +104,7 @@ export default function SiteFooter() {
                     <Phone className="w-4 h-4" />
                   </div>
                   <span className="text-zinc-400 group-hover:text-white transition-colors text-center md:text-left md:mt-1.5">
-                    {BUSINESS.phone}
+                    {phone}
                   </span>
                 </a>
               </li>
