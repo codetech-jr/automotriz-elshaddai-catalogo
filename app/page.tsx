@@ -1,7 +1,31 @@
+import { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import HomeClient from './HomeClient'
 
 export const dynamic = 'force-dynamic'
+
+// ─── 1. METADATA SSR OPTIMIZADA GEOLOCALIZADAMENTE (SEO LOCAL) ────────────────
+export const metadata: Metadata = {
+  title: 'Repuestos y Autoperiquitos Charallave · El Shaddai Valles del Tuy',
+  description: 'Tu tienda física de repuestos nuevos en Charallave. Toyota, Chevrolet, Ford, Chery, Hyundai, Volkswagen y Daewoo. Delivery a Cúa y Ocumare. Cotiza por WhatsApp.',
+  keywords: [
+    'repuestos charallave', 
+    'autoperiquitos charallave', 
+    'repuestos valles del tuy', 
+    'repuestos toyota charallave',
+    'chiveras valles del tuy',
+    'autopartes miranda'
+  ],
+  alternates: {
+    canonical: 'https://automotriz-elshaddai-catalogo.vercel.app',
+  },
+  openGraph: {
+    title: 'Repuestos y Autoperiquitos Charallave · El Shaddai Valles del Tuy',
+    description: 'Tu tienda física de repuestos nuevos en Charallave. Toyota, Chevrolet, Ford, Chery, Hyundai, Volkswagen y Daewoo. Delivery a Cúa y Ocumare. Cotiza por WhatsApp.',
+    url: 'https://automotriz-elshaddai-catalogo.vercel.app',
+    type: 'website',
+  },
+}
 
 export default async function Home() {
   const supabase = await createClient()
@@ -25,5 +49,15 @@ export default async function Home() {
     image_urls: Array.isArray(p.image_urls) ? p.image_urls : [],
   }))
 
-  return <HomeClient initialProducts={products} />
+  return (
+    <>
+      {/* ─── 2. H1 INVISIBLE PARA CRAWLERS (SEO SEMÁNTICO) ───────────────────── */}
+      <h1 className="sr-only">
+        Repuestos y Autoperiquitos Charallave - Automotriz El Shaddai Valles del Tuy
+      </h1>
+      
+      {/* Retorno de tu interfaz original intacta */}
+      <HomeClient initialProducts={products} />
+    </>
+  )
 }

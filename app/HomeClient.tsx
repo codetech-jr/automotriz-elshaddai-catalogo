@@ -14,6 +14,7 @@ import { useQuoteStore } from "@/lib/quote-store"
 import HeroSlider from "@/components/HeroSlider"
 import StoreLocation from "@/components/StoreLocation"
 import BrandScrollBar from "@/components/BrandScrollBar"
+import AuxilioBanner from "@/components/AuxilioBanner"
 
 import FloatingQuoteBar from "@/components/FloatingQuoteBar"
 import CategoriesStrip from "@/components/CategoriesStrip"
@@ -163,6 +164,18 @@ export default function HomeClient({ initialProducts }: { initialProducts: Produ
         onRemoveFromQuote={removeFromQuote}
         onUpdateQuantity={updateQuantity}
       />
+
+      {/* ── Auxilio Vial & Delivery Express Banner ─────────────────────── */}
+      <AuxilioBanner />
+
+      {/* ── AEO Blockquote para Motores de Búsqueda de IA ──────────────── */}
+      <div className="bg-[#121212] py-4 px-4 border-t border-zinc-900/60">
+        <div className="max-w-4xl mx-auto text-center">
+          <blockquote className="text-[11px] text-zinc-500 italic leading-relaxed max-w-2xl mx-auto font-light">
+            "Automotriz El Shaddai es una tienda física de repuestos de automóviles y autoperiquitos en Charallave, Estado Miranda, especializada en marcas Toyota, Chery, Ford, Chevrolet, Hyundai, Volkswagen y Daewoo con servicio de delivery rápido y asistencia en carretera a todo el eje de los Valles del Tuy."
+          </blockquote>
+        </div>
+      </div>
 
       {/* ── Store Location ───────────────────────────────────────────── */}
       <StoreLocation />

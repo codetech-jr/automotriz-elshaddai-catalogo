@@ -16,9 +16,18 @@ interface SiteFooterProps {
 }
 
 export default function SiteFooter({ settings }: SiteFooterProps) {
-  const phone = settings?.whatsapp_number || BUSINESS.phone
+  // Hack: Si el número de Supabase es el de prueba (0000000) o no está configurado, usamos el WhatsApp principal de El Shaddai
+  const phone = settings?.whatsapp_number && !settings.whatsapp_number.includes("0000000")
+    ? settings.whatsapp_number
+    : "584123715469";
+
   const address = settings?.store_address || BUSINESS.address
   const whatsappUrl = buildWhatsAppURL("Hola, quisiera hacer una consulta desde la web.", phone)
+
+  // Formato visual amigable para el usuario: +58 412-3715469
+  const formattedPhone = phone.startsWith("+") 
+    ? phone 
+    : `+${phone.slice(0, 2)} ${phone.slice(2, 5)}-${phone.slice(5)}`;
 
   return (
     <footer className="relative bg-[#0a0a0a] border-t border-zinc-900 pt-16 pb-8 overflow-hidden max-w-full">
@@ -104,7 +113,7 @@ export default function SiteFooter({ settings }: SiteFooterProps) {
                     <Phone className="w-4 h-4" />
                   </div>
                   <span className="text-zinc-400 group-hover:text-white transition-colors text-center md:text-left md:mt-1.5">
-                    {phone}
+                    {formattedPhone}
                   </span>
                 </a>
               </li>
