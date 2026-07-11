@@ -55,7 +55,7 @@ export default async function RootLayout({
     <html lang="es" className="bg-[#121212] overflow-x-hidden">
       <body className="font-sans antialiased bg-[#121212] text-white overflow-x-hidden max-w-full">
         <SettingsProvider settings={settings}>
-          <header className="w-full flex flex-col overflow-hidden">
+          <header className="w-full flex flex-col">
             {/* <BrandScrollBar /> */}
             {settings.is_emergency_banner_active && <AnnouncementBar whatsappNumber={settings.whatsapp_number} />}
             <Navbar />

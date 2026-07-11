@@ -25,7 +25,7 @@
 //     to #0d0d0d so sections are visually distinguishable without a divider.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { SAMPLE_PRODUCTS, type Product, type QuoteItem } from "@/lib/data"
+import { SAMPLE_PRODUCTS, filterProducts, type Product, type QuoteItem } from "@/lib/data"
 import ProductCard from "@/components/ProductCard"
 import { cn } from "@/lib/utils"
 import { ArrowRight } from "lucide-react"
@@ -71,10 +71,9 @@ export default function CatalogGrid({
   // ── Data filtering (use prop if provided, else fallback to static SAMPLE_PRODUCTS) ──
   const allProducts = products || SAMPLE_PRODUCTS
 
-  const filteredProducts = allProducts.filter((p) => {
-    if (filterCategory && p.category.toLowerCase() !== filterCategory.toLowerCase()) return false
-    if (filterBrand && p.brand.toLowerCase() !== filterBrand.toLowerCase()) return false
-    return true
+  const filteredProducts = filterProducts(allProducts, {
+    category: filterCategory,
+    brand: filterBrand,
   })
 
   const displayProducts = filteredProducts.slice(0, limit)
@@ -188,30 +187,7 @@ export default function CatalogGrid({
         )}
 
         {/* ── CTA to full catalog ─────────────────────────────────────── */}
-        {/* Only shown when displaying the homepage limited set (limit < total) */}
-        {filteredProducts.length > limit && (
-          <div className="mt-12 md:mt-14 text-center">
-            <a
-              href="/catalogo"
-              className={cn(
-                "inline-flex items-center justify-center gap-2.5",
-                "bg-zinc-900 hover:bg-zinc-800",
-                "border border-zinc-800 hover:border-zinc-600",
-                "text-white font-bold text-sm md:text-base",
-                "px-7 py-3.5 md:px-8 md:py-4 min-h-[52px] rounded-xl",
-                "transition-all duration-150 active:scale-[0.97]",
-                "shadow-[0_4px_25px_rgba(0,0,0,0.4)]"
-              )}
-              aria-label="Explorar todo el catálogo digital de repuestos"
-            >
-              <span>Ver Catálogo Completo</span>
-              <span className="text-[#E60000] font-black" aria-hidden="true">→</span>
-            </a>
-          </div>
-        )}
-
-        {/* Always show if limit reached, regardless of filter state */}
-        {filteredProducts.length <= limit && filteredProducts.length > 0 && displayProducts.length === limit && (
+        {filteredProducts.length >= limit && (
           <div className="mt-12 md:mt-14 text-center">
             <a
               href="/catalogo"

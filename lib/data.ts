@@ -96,22 +96,44 @@ export function getProductCountByCategory(categoryLabel: string): number {
   ).length
 }
 
-/** Filter products by both category label and brand label */
+/** Check if a given year falls within any year ranges in a compatibility string */
+export function matchesYearRange(compatibility: string, year: string): boolean {
+  if (!compatibility || !year) return false
+  const yearNum = parseInt(year, 10)
+  if (isNaN(yearNum)) return false
+
+  // Direct year mention: "Corolla 2018" contains "2018"
+  if (compatibility.includes(year)) return true
+
+  // Range patterns: "2014–2020", "2014-2020", "2014 - 2020", "14-20"
+  const rangeRegex = /(\d{2,4})\s*[–\-]\s*(\d{2,4})/g
+  let match: RegExpExecArray | null
+  while ((match = rangeRegex.exec(compatibility)) !== null) {
+    let startYear = parseInt(match[1], 10)
+    let endYear = parseInt(match[2], 10)
+    // Handle 2-digit years
+    if (startYear < 100) startYear += 1900 + (startYear < 50 ? 100 : 0)
+    if (endYear < 100) endYear += 1900 + (endYear < 50 ? 100 : 0)
+    if (yearNum >= startYear && yearNum <= endYear) return true
+  }
+
+  return false
+}
+
+/** Filter products by category, brand, search query terms, and optional vehicle year */
 export function filterProducts(
   products: Product[],
-  opts: { category?: string | null; brand?: string | null; query?: string }
+  opts: { category?: string | null; brand?: string | null; query?: string; year?: string }
 ): Product[] {
   return products.filter((p) => {
     if (opts.category && p.category.toLowerCase() !== opts.category.toLowerCase()) return false
     if (opts.brand && p.brand.toLowerCase() !== opts.brand.toLowerCase()) return false
+    if (opts.year && !matchesYearRange(p.compatibility, opts.year)) return false
     if (opts.query) {
-      const q = opts.query.toLowerCase()
-      return (
-        p.name.toLowerCase().includes(q) ||
-        p.brand.toLowerCase().includes(q) ||
-        p.sku.toLowerCase().includes(q) ||
-        p.compatibility.toLowerCase().includes(q)
-      )
+      const q = opts.query.toLowerCase().trim()
+      const terms = q.split(/\s+/).filter(Boolean)
+      const searchable = `${p.name} ${p.brand} ${p.category} ${p.compatibility} ${p.sku}`.toLowerCase()
+      return terms.every((term) => searchable.includes(term))
     }
     return true
   })
@@ -125,6 +147,16 @@ export interface SupportedVehicleMake {
 }
 
 export const SUPPORTED_VEHICLES: SupportedVehicleMake[] = [
+  {
+    id: "chery",
+    label: "Chery",
+    models: [
+      "Arauco",
+      "Tiggo 3",
+      "Tiggo 7",
+      "Orinoco"
+    ]
+  },
   {
     id: "toyota",
     label: "Toyota",

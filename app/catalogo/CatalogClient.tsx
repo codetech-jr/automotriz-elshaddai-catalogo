@@ -154,35 +154,52 @@ function SelectDropdown({ id, label, value, options, onChange, placeholder, disa
   )
 }
 
+import { useCatalogFilters, type CatalogFilters } from "@/hooks/useCatalogFilters"
+
 // ─── YMMFilter Component ───────────────────────────────────────────────────────
 function YMMFilter({
-  selectedBrand,
-  setSelectedBrand,
-  setSearchQuery,
+  filters,
+  setBrand,
+  setSearch,
+  setYear,
 }: {
-  selectedBrand: string | null
-  setSelectedBrand: (brand: string | null) => void
-  setSearchQuery: (query: string) => void
+  filters: CatalogFilters
+  setBrand: (brand: string | null) => void
+  setSearch: (query: string) => void
+  setYear: (year: string | null) => void
 }) {
   const [make, setMake] = useState("")
   const [model, setModel] = useState("")
-  const [year, setYear] = useState("")
+  const [selectedYear, setSelectedYear] = useState("")
+
+  const selectedBrand = filters.brand
+  const currentSearch = filters.search
+  const currentYear = filters.year
 
   useEffect(() => {
-    if (selectedBrand) {
-      if (YMM_DATA[selectedBrand]) {
-        setMake(selectedBrand)
+    if (selectedBrand && YMM_DATA[selectedBrand]) {
+      setMake(selectedBrand)
+      
+      // Sync model if it exists in YMM_DATA
+      const modelsForMake = Object.keys(YMM_DATA[selectedBrand] || {})
+      const matchedModel = modelsForMake.find(m => m.toLowerCase() === currentSearch.toLowerCase())
+      if (matchedModel) {
+        setModel(matchedModel)
+        if (currentYear && YMM_DATA[selectedBrand][matchedModel]?.includes(currentYear)) {
+          setSelectedYear(currentYear)
+        } else {
+          setSelectedYear("")
+        }
       } else {
-        setMake("")
         setModel("")
-        setYear("")
+        setSelectedYear("")
       }
     } else {
       setMake("")
       setModel("")
-      setYear("")
+      setSelectedYear("")
     }
-  }, [selectedBrand])
+  }, [selectedBrand, currentSearch, currentYear])
 
   const makes = Object.keys(YMM_DATA)
   const models = make ? Object.keys(YMM_DATA[make] ?? {}) : []
@@ -191,20 +208,22 @@ function YMMFilter({
   const handleMakeChange = (val: string) => {
     setMake(val)
     setModel("")
-    setYear("")
-    setSelectedBrand(val || null)
+    setSelectedYear("")
+    setBrand(val || null)
+    setSearch("")
+    setYear(null)
   }
 
   const handleModelChange = (val: string) => {
     setModel(val)
-    setYear("")
+    setSelectedYear("")
   }
 
   const handleSearch = () => {
     if (!make) return
-    setSelectedBrand(make)
-    const searchString = `${model} ${year}`.trim()
-    setSearchQuery(searchString)
+    setBrand(make)
+    setSearch(model)
+    setYear(selectedYear || null)
   }
 
   const isReady = !!make
@@ -241,9 +260,9 @@ function YMMFilter({
         <SelectDropdown
           id="ymm-year"
           label="Año"
-          value={year}
+          value={selectedYear}
           options={years}
-          onChange={setYear}
+          onChange={setSelectedYear}
           placeholder="Ej: 2018"
           disabled={!model}
         />
@@ -266,7 +285,7 @@ function YMMFilter({
       >
         <Search className="w-4 h-4" aria-hidden="true" />
         {make
-          ? `Ver repuestos para ${make}${model ? ` ${model}` : ""}${year ? ` ${year}` : ""} →`
+          ? `Ver repuestos para ${make}${model ? ` ${model}` : ""}${selectedYear ? ` ${selectedYear}` : ""} →`
           : "Selecciona tu marca para continuar"
         }
       </button>
@@ -311,46 +330,23 @@ export default function CatalogClient({ initialProducts }: { initialProducts: Pr
     updateQuantity,
   } = useQuoteStore()
 
-  const searchParams = useSearchParams()
-  const [selectedBrand, setSelectedBrand] = useState<string | null>(null)
-  const [activeCategory, setActiveCategory] = useState<string | null>(null)
-  const [searchQuery, setSearchQuery] = useState("")
+  const {
+    filters,
+    setBrand,
+    setCategory,
+    setSearch,
+    setYear,
+    clearAll,
+    hasActiveFilters,
+    applyFilters,
+  } = useCatalogFilters()
 
-  useEffect(() => {
-    const qParam = searchParams.get("q")
-    const brandParam = searchParams.get("brand")
-    const categoryParam = searchParams.get("category")
+  const selectedBrand = filters.brand
+  const activeCategory = filters.category
+  const searchQuery = filters.search
 
-    if (qParam !== null) {
-      setSearchQuery(qParam)
-    }
-    if (brandParam !== null) {
-      setSelectedBrand(brandParam)
-    }
-    if (categoryParam !== null) {
-      setActiveCategory(categoryParam)
-    }
-  }, [searchParams])
-
-  // Filtrado de productos basado en el estado cliente
-  let filtered = initialProducts
-  if (activeCategory) {
-    filtered = filtered.filter(p => p.category.toLowerCase() === activeCategory.toLowerCase())
-  }
-  if (selectedBrand) {
-    filtered = filtered.filter(p => p.brand.toLowerCase() === selectedBrand.toLowerCase())
-  }
-  if (searchQuery.trim()) {
-    const q = searchQuery.toLowerCase().trim()
-    filtered = filtered.filter(
-      p =>
-        p.name.toLowerCase().includes(q) ||
-        p.brand.toLowerCase().includes(q) ||
-        p.category.toLowerCase().includes(q) ||
-        p.compatibility.toLowerCase().includes(q) ||
-        p.sku.toLowerCase().includes(q)
-    )
-  }
+  // Filtrado de productos basado en el estado cliente y URL
+  const filtered = applyFilters(initialProducts)
 
   return (
     <main className="pb-16 min-h-screen bg-[#0a0a0a]">
@@ -382,9 +378,10 @@ export default function CatalogClient({ initialProducts }: { initialProducts: Pr
         
         {/* YMM CASCADE FILTER BLOCK */}
         <YMMFilter
-          selectedBrand={selectedBrand}
-          setSelectedBrand={setSelectedBrand}
-          setSearchQuery={setSearchQuery}
+          filters={filters}
+          setBrand={setBrand}
+          setSearch={setSearch}
+          setYear={setYear}
         />
 
         {/* Search Input Card */}
@@ -396,12 +393,12 @@ export default function CatalogClient({ initialProducts }: { initialProducts: Pr
             type="text"
             placeholder="Buscar por nombre, SKU, marca o compatibilidad (ej. Arauca, TOY-FRN...)"
             value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
+            onChange={e => setSearch(e.target.value)}
             className="w-full bg-[#121620]/95 border border-[#252b3b]/80 focus:border-red-500/60 focus:ring-1 focus:ring-red-500/40 rounded-2xl py-3.5 pl-11 pr-4 text-white placeholder-zinc-500 text-sm transition-all shadow-[0_4px_25px_rgba(0,0,0,0.3)] outline-none"
           />
           {searchQuery && (
             <button
-              onClick={() => setSearchQuery("")}
+              onClick={() => setSearch("")}
               className="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-500 hover:text-white cursor-pointer"
               aria-label="Limpiar búsqueda"
             >
@@ -419,7 +416,7 @@ export default function CatalogClient({ initialProducts }: { initialProducts: Pr
             </span>
             <div className="flex flex-wrap gap-2">
               <button
-                onClick={() => setSelectedBrand(null)}
+                onClick={() => setBrand(null)}
                 className={`rounded-full px-3.5 py-1.5 text-xs font-semibold tracking-wide transition-all border cursor-pointer ${
                   selectedBrand === null
                     ? "bg-white text-zinc-950 border-white"
@@ -431,7 +428,7 @@ export default function CatalogClient({ initialProducts }: { initialProducts: Pr
               {BRANDS.map(brand => (
                 <button
                   key={brand.id}
-                  onClick={() => setSelectedBrand(brand.label)}
+                  onClick={() => setBrand(brand.label)}
                   className={`rounded-full px-3.5 py-1.5 text-xs font-semibold tracking-wide transition-all border cursor-pointer ${
                     selectedBrand?.toLowerCase() === brand.label.toLowerCase()
                       ? "bg-amber-600 text-white border-amber-600 shadow-[0_2px_10px_rgba(217,119,6,0.25)]"
@@ -451,7 +448,7 @@ export default function CatalogClient({ initialProducts }: { initialProducts: Pr
             </span>
             <div className="flex flex-wrap gap-2">
               <button
-                onClick={() => setActiveCategory(null)}
+                onClick={() => setCategory(null)}
                 className={`rounded-full px-3.5 py-1.5 text-xs font-semibold tracking-wide transition-all border cursor-pointer ${
                   activeCategory === null
                     ? "bg-white text-zinc-950 border-white"
@@ -463,7 +460,7 @@ export default function CatalogClient({ initialProducts }: { initialProducts: Pr
               {CATEGORIES.map(cat => (
                 <button
                   key={cat.id}
-                  onClick={() => setActiveCategory(cat.label)}
+                  onClick={() => setCategory(cat.label)}
                   className={`rounded-full px-3.5 py-1.5 text-xs font-semibold tracking-wide transition-all border cursor-pointer ${
                     activeCategory?.toLowerCase() === cat.label.toLowerCase()
                       ? "bg-amber-500 text-zinc-950 border-amber-500 shadow-[0_2px_10px_rgba(245,158,11,0.25)]"
@@ -478,7 +475,7 @@ export default function CatalogClient({ initialProducts }: { initialProducts: Pr
         </div>
 
         {/* Active Filters Summary Banner */}
-        {(activeCategory || selectedBrand || searchQuery.trim()) && (
+        {hasActiveFilters && (
           <div className="flex flex-wrap items-center gap-2 mb-6 bg-zinc-900/40 border border-zinc-800/50 rounded-2xl p-3">
             <span className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider mr-1">
               Filtros Activos:
@@ -486,7 +483,7 @@ export default function CatalogClient({ initialProducts }: { initialProducts: Pr
             {selectedBrand && (
               <span className="inline-flex items-center gap-1.5 bg-zinc-850 border border-zinc-800 text-zinc-300 text-xs px-3 py-1 rounded-full">
                 Marca: {selectedBrand}
-                <button onClick={() => setSelectedBrand(null)} className="hover:text-white p-0.5 cursor-pointer" aria-label="Remover filtro de marca">
+                <button onClick={() => setBrand(null)} className="hover:text-white p-0.5 cursor-pointer" aria-label="Remover filtro de marca">
                   <X className="w-3 h-3" />
                 </button>
               </span>
@@ -494,7 +491,15 @@ export default function CatalogClient({ initialProducts }: { initialProducts: Pr
             {activeCategory && (
               <span className="inline-flex items-center gap-1.5 bg-zinc-850 border border-zinc-800 text-zinc-300 text-xs px-3 py-1 rounded-full">
                 Cat: {activeCategory}
-                <button onClick={() => setActiveCategory(null)} className="hover:text-white p-0.5 cursor-pointer" aria-label="Remover filtro de categoría">
+                <button onClick={() => setCategory(null)} className="hover:text-white p-0.5 cursor-pointer" aria-label="Remover filtro de categoría">
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+            {filters.year && (
+              <span className="inline-flex items-center gap-1.5 bg-zinc-850 border border-zinc-800 text-zinc-300 text-xs px-3 py-1 rounded-full">
+                Año: {filters.year}
+                <button onClick={() => setYear(null)} className="hover:text-white p-0.5 cursor-pointer" aria-label="Remover filtro de año">
                   <X className="w-3 h-3" />
                 </button>
               </span>
@@ -502,17 +507,13 @@ export default function CatalogClient({ initialProducts }: { initialProducts: Pr
             {searchQuery.trim() && (
               <span className="inline-flex items-center gap-1.5 bg-zinc-850 border border-zinc-800 text-zinc-300 text-xs px-3 py-1 rounded-full">
                 &ldquo;{searchQuery.trim()}&rdquo;
-                <button onClick={() => setSearchQuery("")} className="hover:text-white p-0.5 cursor-pointer" aria-label="Remover búsqueda">
+                <button onClick={() => setSearch("")} className="hover:text-white p-0.5 cursor-pointer" aria-label="Remover búsqueda">
                   <X className="w-3 h-3" />
                 </button>
               </span>
             )}
             <button
-              onClick={() => {
-                setActiveCategory(null)
-                setSelectedBrand(null)
-                setSearchQuery("")
-              }}
+              onClick={clearAll}
               className="text-xs text-zinc-500 hover:text-white underline ml-auto transition-colors px-2 py-1 cursor-pointer"
             >
               Limpiar todo
@@ -559,11 +560,7 @@ export default function CatalogClient({ initialProducts }: { initialProducts: Pr
               Preguntar por WhatsApp ⚡
             </a>
             <button
-              onClick={() => {
-                setActiveCategory(null)
-                setSelectedBrand(null)
-                setSearchQuery("")
-              }}
+              onClick={clearAll}
               className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors mt-1 cursor-pointer"
             >
               Ver todos los repuestos
