@@ -12,17 +12,35 @@ import { BUSINESS } from '@/lib/config'
 import { SettingsProvider } from '@/lib/settings-context'
 
 export const metadata: Metadata = {
-  title: 'Automotriz El Shaddai | Repuestos para Chery, Toyota, Ford y Chevrolet',
-  description: 'Tu especialista en repuestos automotrices en Charallave, Miranda. Repuestos originales y alternativos para Chery, Toyota, Ford y Chevrolet. Delivery a toda la región. Cotiza por WhatsApp.',
-  keywords: ['repuestos', 'automotriz', 'Chery', 'Toyota', 'Ford', 'Chevrolet', 'Charallave', 'Miranda', 'Venezuela', 'autopartes'],
+  title: 'Repuestos en Charallave | Automotriz El Shaddai | Autopartes & Delivery',
+  description: '¿Buscas repuestos en Charallave, Cúa o Santa Teresa? Automotriz El Shaddai ofrece autopartes de calidad con delivery express y auxilio vial en Valles del Tuy. ¡Cotiza hoy!',
+  keywords: [
+    'repuestos',
+    'automotriz',
+    'autopartes',
+    'Charallave',
+    'Cúa',
+    'Santa Teresa',
+    'Valles del Tuy',
+    'delivery repuestos',
+    'auxilio vial',
+    'Chery',
+    'Toyota',
+    'Ford',
+    'Chevrolet'
+  ],
   authors: [{ name: 'Automotriz El Shaddai' }],
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || 'googlec38f216598ebaa1b.html',
+  },
   openGraph: {
-    title: 'Automotriz El Shaddai | Repuestos para Chery, Toyota, Ford y Chevrolet',
-    description: 'Tu especialista en repuestos automotrices en Charallave, Miranda. Cotiza por WhatsApp.',
+    title: 'Repuestos en Charallave | Automotriz El Shaddai | Autopartes & Delivery',
+    description: '¿Buscas repuestos en Charallave, Cúa o Santa Teresa? Automotriz El Shaddai ofrece autopartes de calidad con delivery express y auxilio vial en Valles del Tuy. ¡Cotiza hoy!',
     type: 'website',
     locale: 'es_VE',
   },
 }
+
 
 export const viewport: Viewport = {
   themeColor: '#121212',
