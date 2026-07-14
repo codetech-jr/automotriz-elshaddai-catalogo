@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Analytics } from '@vercel/analytics/next'
+import Script from 'next/script'
 import './globals.css'
 import AnnouncementBar from '@/components/AnnouncementBar'
 import Navbar from '@/components/Navbar'
@@ -84,6 +85,35 @@ export default async function RootLayout({
     <html lang="es" className="bg-[#121212] overflow-x-hidden">
       <body className="font-sans antialiased bg-[#121212] text-white overflow-x-hidden max-w-full">
         <SettingsProvider settings={settings}>
+          {/* Telemetría (Google Analytics 4 & Microsoft Clarity) en producción */}
+          {process.env.NODE_ENV === 'production' && (
+            <>
+              {/* Google Analytics 4 */}
+              <Script
+                src="https://www.googletagmanager.com/gtag/js?id=G-93DFKBJWYC"
+                strategy="afterInteractive"
+              />
+              <Script id="google-analytics" strategy="afterInteractive">
+                {`
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('config', 'G-93DFKBJWYC');
+                `}
+              </Script>
+
+              {/* Microsoft Clarity */}
+              <Script id="microsoft-clarity" strategy="afterInteractive">
+                {`
+                  (function(c,l,a,r,i,t,y){
+                      c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+                      t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+                      y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+                  })(window, document, "clarity", "script", "xmjte1gahp");
+                `}
+              </Script>
+            </>
+          )}
           <header className="w-full flex flex-col">
             {/* <BrandScrollBar /> */}
             {settings.is_emergency_banner_active && <AnnouncementBar whatsappNumber={settings.whatsapp_number} />}
