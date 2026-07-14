@@ -41,7 +41,8 @@ export const metadata: Metadata = {
     google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || 'y_X0TTs92bG0tZ8UKoc1lmSFkfGMucC0IOZV1tVlm1Y',
   },
   
-  // Open Graph optimizado con la misma estrategia local para redes sociales
+  // Open Graph optimizado con la misma estrategia local para redes sociales // forzando actualización Vercel
+
   openGraph: {
     title: 'Repuestos en Charallave | Automotriz El Shaddai | Autopartes & Delivery',
     description: '¿Buscas repuestos en Charallave, Cúa o Santa Teresa? Automotriz El Shaddai ofrece autopartes de calidad con delivery express y auxilio vial en Valles del Tuy. ¡Cotiza hoy!',
