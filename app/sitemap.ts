@@ -11,7 +11,7 @@ interface RepuestoSitemap {
 }
 
 // ─── CONSTANTE URL BASE ──────────────────────────────────────────────────────
-const BASE_URL = "https://automotriz-elshaddai-catalogo.vercel.app";
+const BASE_URL = "https://www.automotrizelshaddai.com.ve/";
 
 // ─── SIMULACIÓN DE CONSULTA COMPLETA A SUPABASE (ALL REPUESTOS) ──────────────
 // En el futuro, aquí realizarás una consulta real a Supabase:

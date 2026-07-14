@@ -4,7 +4,7 @@
 
 - **Marca:** Automotriz El Shaddai
 - **Eslogan / Filosofía:** "Asesoría, rapidez y servicio más allá del precio", "Los que sí saben de repuestos".
-- **Dominio Fase de Prueba:** `https://automotriz-elshaddai-catalogo.vercel.app/`
+- **Dominio Fase de Prueba:** `https://www.automotrizelshaddai.com.ve/`
 
 ## 2. Geografía Local (Data Crítica para SEO Geo-Targeted)
 

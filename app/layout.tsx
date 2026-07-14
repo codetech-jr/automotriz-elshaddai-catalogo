@@ -12,8 +12,13 @@ import { BUSINESS } from '@/lib/config'
 import { SettingsProvider } from '@/lib/settings-context'
 
 export const metadata: Metadata = {
+  // SEO Local: Título optimizado con palabras clave principales y secundarias
   title: 'Repuestos en Charallave | Automotriz El Shaddai | Autopartes & Delivery',
+  
+  // CTR Hook: Orientado a urgencias (Delivery Express, Auxilio Vial) cubriendo los Valles del Tuy (Charallave, Cúa, Santa Teresa)
   description: '¿Buscas repuestos en Charallave, Cúa o Santa Teresa? Automotriz El Shaddai ofrece autopartes de calidad con delivery express y auxilio vial en Valles del Tuy. ¡Cotiza hoy!',
+  
+  // Palabras clave semánticas y de marca
   keywords: [
     'repuestos',
     'automotriz',
@@ -30,9 +35,13 @@ export const metadata: Metadata = {
     'Chevrolet'
   ],
   authors: [{ name: 'Automotriz El Shaddai' }],
+  
+  // Integración de Google Search Console mediante API de Metadatos de Next.js
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || 'googlec38f216598ebaa1b.html',
   },
+  
+  // Open Graph optimizado con la misma estrategia local para redes sociales
   openGraph: {
     title: 'Repuestos en Charallave | Automotriz El Shaddai | Autopartes & Delivery',
     description: '¿Buscas repuestos en Charallave, Cúa o Santa Teresa? Automotriz El Shaddai ofrece autopartes de calidad con delivery express y auxilio vial en Valles del Tuy. ¡Cotiza hoy!',
@@ -40,6 +49,7 @@ export const metadata: Metadata = {
     locale: 'es_VE',
   },
 }
+
 
 
 export const viewport: Viewport = {

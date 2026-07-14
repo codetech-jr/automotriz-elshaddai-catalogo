@@ -243,12 +243,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title,
     description,
     alternates: {
-      canonical: `https://automotriz-elshaddai-catalogo.vercel.app/marcas/${marca_slug}`,
+      canonical: `https://www.automotrizelshaddai.com.ve/marcas/${marca_slug}`,
     },
     openGraph: {
       title,
       description,
-      url: `https://automotriz-elshaddai-catalogo.vercel.app/marcas/${marca_slug}`,
+      url: `https://www.automotrizelshaddai.com.ve/marcas/${marca_slug}`,
       type: "website",
     }
   };
@@ -264,7 +264,7 @@ export default async function BrandLanding({ params }: PageProps) {
 
   const repuestos = await getRepuestosPorMarca(marca_slug) || [];
   const marcaCapitalizada = marca_slug.charAt(0).toUpperCase() + marca_slug.slice(1);
-  const siteUrl = `https://automotriz-elshaddai-catalogo.vercel.app/marcas/${marca_slug}`;
+  const siteUrl = `https://www.automotrizelshaddai.com.ve/marcas/${marca_slug}`;
 
   // WhatsApp Config
   const waPhoneNumber = "584123715469";
@@ -282,13 +282,13 @@ export default async function BrandLanding({ params }: PageProps) {
         "@type": "ListItem",
         "position": 1,
         "name": "Inicio",
-        "item": "https://automotriz-elshaddai-catalogo.vercel.app"
+        "item": "https://www.automotrizelshaddai.com.ve/"
       },
       {
         "@type": "ListItem",
         "position": 2,
         "name": "Catálogo",
-        "item": "https://automotriz-elshaddai-catalogo.vercel.app/catalogo"
+        "item": "https://www.automotrizelshaddai.com.ve/catalogo"
       },
       {
         "@type": "ListItem",
@@ -309,7 +309,7 @@ export default async function BrandLanding({ params }: PageProps) {
     "publisher": {
       "@type": "AutoPartsStore",
       "name": "Automotriz El Shaddai",
-      "@id": "https://automotriz-elshaddai-catalogo.vercel.app/#organization"
+      "@id": "https://www.automotrizelshaddai.com.ve/#organization"
     },
     "mainEntity": {
       "@type": "ItemList",
@@ -321,7 +321,7 @@ export default async function BrandLanding({ params }: PageProps) {
           "@type": "Product",
           "name": item.nombre,
           "sku": item.sku,
-          "url": `https://automotriz-elshaddai-catalogo.vercel.app/${item.marca_slug}/${item.pieza_slug}`,
+          "url": `https://www.automotrizelshaddai.com.ve/${item.marca_slug}/${item.pieza_slug}`,
           "offers": {
             "@type": "Offer",
             "price": "0.00",

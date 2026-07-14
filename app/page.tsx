@@ -17,12 +17,12 @@ export const metadata: Metadata = {
     'autopartes miranda'
   ],
   alternates: {
-    canonical: 'https://automotriz-elshaddai-catalogo.vercel.app',
+    canonical: 'https://www.automotrizelshaddai.com.ve/',
   },
   openGraph: {
     title: 'Repuestos y Autoperiquitos Charallave · El Shaddai Valles del Tuy',
     description: 'Tu tienda física de repuestos nuevos en Charallave. Toyota, Chevrolet, Ford, Chery, Hyundai, Volkswagen y Daewoo. Delivery a Cúa y Ocumare. Cotiza por WhatsApp.',
-    url: 'https://automotriz-elshaddai-catalogo.vercel.app',
+    url: 'https://www.automotrizelshaddai.com.ve/',
     type: 'website',
   },
 }

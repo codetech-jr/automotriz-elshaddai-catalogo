@@ -194,7 +194,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const marcaCapitalizada = repuesto.marca_slug.charAt(0).toUpperCase() + repuesto.marca_slug.slice(1);
   const modelosStr = repuesto.modelos_compatibles.slice(0, 3).join(", ");
-  const siteUrl = `https://automotriz-elshaddai-catalogo.vercel.app/${repuesto.marca_slug}/${repuesto.pieza_slug}`;
+  const siteUrl = `https://www.automotrizelshaddai.com.ve/${repuesto.marca_slug}/${repuesto.pieza_slug}`;
 
   let title = "";
   let metaDescription = "";
@@ -232,7 +232,7 @@ export default async function ProductPage({ params }: PageProps) {
   }
 
   const marcaCapitalizada = repuesto.marca_slug.charAt(0).toUpperCase() + repuesto.marca_slug.slice(1);
-  const siteUrl = `https://automotriz-elshaddai-catalogo.vercel.app/${repuesto.marca_slug}/${repuesto.pieza_slug}`;
+  const siteUrl = `https://www.automotrizelshaddai.com.ve/${repuesto.marca_slug}/${repuesto.pieza_slug}`;
 
   // WhatsApp Config
   const waPhoneNumber = "584123715469"; // Usando BUSINESS.phone global
@@ -251,7 +251,7 @@ export default async function ProductPage({ params }: PageProps) {
     "@type": "Product",
     "@id": `${siteUrl}#product`,
     "name": `${repuesto.nombre} ${marcaCapitalizada} - Repuestos Charallave`,
-    "image": [`https://automotriz-elshaddai-catalogo.vercel.app/images/repuestos/${marca_slug}/${pieza_slug}.webp`],
+    "image": [`https://www.automotrizelshaddai.com.ve/images/repuestos/${marca_slug}/${pieza_slug}.webp`],
     "description": `Cotización rápida de ${repuesto.nombre} para ${marcaCapitalizada} (${repuesto.modelos_compatibles.join(", ")}) en Charallave y Valles del Tuy. Garantía de tienda física.`,
     "sku": repuesto.sku,
     "mpn": repuesto.sku,
