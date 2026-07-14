@@ -17,3 +17,5 @@ node_modules
 *.tsbuildinfo
 Skills/
 Task.md
+.vercel
+.env*
