@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   
   // Integración de Google Search Console mediante API de Metadatos de Next.js
   verification: {
-    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || 'googlec38f216598ebaa1b.html',
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
   },
   
   // Open Graph optimizado con la misma estrategia local para redes sociales
