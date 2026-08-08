@@ -1,7 +1,7 @@
 import { MetadataRoute } from "next";
 
 // ─── DEFINICIÓN DE TIPOS ESTRICTOS ───────────────────────────────────────────
-type MarcaSlug = "toyota" | "chery" | "ford" | "chevrolet" | "hyundai" | "volkswagen" | "daewoo";
+type MarcaSlug = "toyota" | "chery" | "ford" | "chevrolet" | "hyundai" | "volkswagen" | "daewoo" | "renault" | "jeep";
 
 interface RepuestoSitemap {
   marca_slug: MarcaSlug;
@@ -60,6 +60,18 @@ async function getAllRepuestos(): Promise<RepuestoSitemap[]> {
       urgency_vial: false,
       updated_at: new Date("2026-06-22"),
     },
+    {
+      marca_slug: "renault",
+      pieza_slug: "kit-tiempo-logan",
+      urgency_vial: true,
+      updated_at: new Date("2026-08-01"),
+    },
+    {
+      marca_slug: "jeep",
+      pieza_slug: "pastillas-freno-grand-cherokee",
+      urgency_vial: true,
+      updated_at: new Date("2026-08-02"),
+    },
   ];
 }
 
@@ -90,7 +102,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   // GRUPO 2: Categorías Madre de Marcas Clave
-  const marcas: MarcaSlug[] = ["toyota", "chery", "ford", "chevrolet", "hyundai", "volkswagen", "daewoo"];
+  const marcas: MarcaSlug[] = ["toyota", "chery", "ford", "chevrolet", "hyundai", "volkswagen", "daewoo", "renault", "jeep"];
   const categoryRoutes = marcas.map((marca) => ({
     url: `${BASE_URL}/marcas/${marca}`,
     lastModified: lastModifiedGlobal,

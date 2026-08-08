@@ -85,6 +85,8 @@ export const BRAND_META: BrandMeta[] = [
   { id: "volkswagen", label: "Volkswagen", initials: "VW", colorClass: "text-sky-400" },
   { id: "hyundai",    label: "Hyundai",    initials: "HY", colorClass: "text-blue-500" },
   { id: "daewoo",     label: "Daewoo",     initials: "DW", colorClass: "text-orange-400" },
+  { id: "renault",    label: "Renault",    initials: "RN", colorClass: "text-amber-400" },
+  { id: "jeep",       label: "Jeep",       initials: "JP", colorClass: "text-emerald-400" },
 ]
 
 // ── Derived helpers ────────────────────────────────────────────────────────────
@@ -184,6 +186,7 @@ export const SUPPORTED_VEHICLES: SupportedVehicleMake[] = [
     id: "chevrolet",
     label: "Chevrolet",
     models: [
+      "Silverado (Cheyenne / C1500 / C2500 / HD)",
       "Corsa",
       "Aveo",
       "Optra",
@@ -234,6 +237,33 @@ export const SUPPORTED_VEHICLES: SupportedVehicleMake[] = [
       "Gol",
       "Crossfox",
       "Golf"
+    ]
+  },
+  {
+    id: "renault",
+    label: "Renault",
+    models: [
+      "Logan",
+      "Twingo",
+      "Clio",
+      "Megane",
+      "Symbol",
+      "Duster",
+      "Kangoo",
+      "Scenic"
+    ]
+  },
+  {
+    id: "jeep",
+    label: "Jeep",
+    models: [
+      "Grand Cherokee (WJ / WK / WK2)",
+      "Cherokee Liberty (KJ / KK)",
+      "Cherokee XJ",
+      "Compass",
+      "Commander",
+      "Wrangler (TJ / JK)",
+      "Renegade"
     ]
   }
 ]

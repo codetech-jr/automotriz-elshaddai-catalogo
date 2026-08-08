@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 
 // ─── DEFINICIONES Y TIPOS ESTRICTOS ──────────────────────────────────────────
-export type MarcaSlug = "toyota" | "chery" | "ford" | "chevrolet" | "hyundai" | "volkswagen" | "daewoo";
+export type MarcaSlug = "toyota" | "chery" | "ford" | "chevrolet" | "hyundai" | "volkswagen" | "daewoo" | "renault" | "jeep";
 
 interface RepuestoResumen {
   id: string;
@@ -27,7 +27,7 @@ interface RepuestoResumen {
 }
 
 export function isValidMarcaSlug(slug: string): slug is MarcaSlug {
-  const marcasValidas: MarcaSlug[] = ["toyota", "chery", "ford", "chevrolet", "hyundai", "volkswagen", "daewoo"];
+  const marcasValidas: MarcaSlug[] = ["toyota", "chery", "ford", "chevrolet", "hyundai", "volkswagen", "daewoo", "renault", "jeep"];
   return marcasValidas.includes(slug as MarcaSlug);
 }
 
@@ -101,6 +101,16 @@ async function getRepuestosPorMarca(marcaSlug: string): Promise<RepuestoResumen[
         urgency_vial: false,
         stock: "Bajo Pedido",
         modelos_compatibles: ["Optra Design", "Optra Limited", "Meriva 1.8"]
+      },
+      {
+        id: "chv_4",
+        nombre: "Bomba de Agua V8 5.3 Chevrolet Silverado",
+        pieza_slug: "bomba-agua-silverado",
+        marca_slug: "chevrolet",
+        sku: "SHADDAI-CHV-SILVER",
+        urgency_vial: true,
+        stock: "Disponible",
+        modelos_compatibles: ["Silverado 1500", "Silverado 2500", "Cheyenne 5.3"]
       }
     ],
     ford: [
@@ -211,6 +221,50 @@ async function getRepuestosPorMarca(marcaSlug: string): Promise<RepuestoResumen[
         urgency_vial: true,
         stock: "Disponible",
         modelos_compatibles: ["Lanos 1.5 (GTI)", "Cielo 1.5"]
+      }
+    ],
+    renault: [
+      {
+        id: "ren_1",
+        nombre: "Kit de Tiempo Renault 1.6 16V",
+        pieza_slug: "kit-tiempo-logan",
+        marca_slug: "renault",
+        sku: "SHADDAI-REN-TIEMP",
+        urgency_vial: true,
+        stock: "Disponible",
+        modelos_compatibles: ["Logan 1.6", "Clio 1.6", "Symbol 1.6", "Megane 1.6"]
+      },
+      {
+        id: "ren_2",
+        nombre: "Pastillas de Freno Delanteras Renault Logan/Clio",
+        pieza_slug: "pastillas-freno-logan",
+        marca_slug: "renault",
+        sku: "SHADDAI-REN-PASTI",
+        urgency_vial: true,
+        stock: "Disponible",
+        modelos_compatibles: ["Logan 1.4 / 1.6", "Clio 1.6", "Twingo"]
+      }
+    ],
+    jeep: [
+      {
+        id: "jep_1",
+        nombre: "Pastillas de Freno Heavy Duty Jeep Grand Cherokee",
+        pieza_slug: "pastillas-freno-grand-cherokee",
+        marca_slug: "jeep",
+        sku: "SHADDAI-JEP-PASTI",
+        urgency_vial: true,
+        stock: "Disponible",
+        modelos_compatibles: ["Grand Cherokee (WJ / WK)", "Cherokee Liberty (KJ / KK)"]
+      },
+      {
+        id: "jep_2",
+        nombre: "Amortiguadores Delanteros Reforzados Jeep 4x4",
+        pieza_slug: "amortiguadores-jeep-liberty",
+        marca_slug: "jeep",
+        sku: "SHADDAI-JEP-AMORT",
+        urgency_vial: false,
+        stock: "Disponible",
+        modelos_compatibles: ["Cherokee Liberty (KJ / KK)", "Cherokee XJ 4.0", "Wrangler"]
       }
     ]
   };

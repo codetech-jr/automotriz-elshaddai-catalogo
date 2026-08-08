@@ -31,7 +31,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { useEffect, useRef, useState } from "react"
 import { MessageCircle, Minus, Plus, ShoppingCart, Wrench, X, Trash2, Smartphone, Building2, DollarSign, Coins } from "lucide-react"
-import { buildWhatsAppURL, buildQuoteMessage, type QuoteItem } from "@/lib/config"
+import { buildWhatsAppURL, buildQuoteMessage, BUSINESS, type QuoteItem } from "@/lib/config"
 import { cn } from "@/lib/utils"
 import TestimonialTrustBanner from "@/components/TestimonialTrustBanner"
 
@@ -128,7 +128,8 @@ export default function QuoteDrawer({
     const paymentLabel = PAYMENT_METHODS[selectedPayment].name
     message += `\n\n*Método de Pago Preferido:* ${paymentLabel}`
   }
-  const waUrl = buildWhatsAppURL(message)
+  const waUrlCharallave = buildWhatsAppURL(message, BUSINESS.branches.charallave.phone)
+  const waUrlCaracas = buildWhatsAppURL(message, BUSINESS.branches.caracas.phone)
 
   // Reset vehicleInfo and selectedPayment on drawer close
   useEffect(() => {
@@ -362,24 +363,54 @@ export default function QuoteDrawer({
               </div>
             )}
 
-            {/* Primary CTA — WhatsApp Redirection */}
-            <a
-              href={waUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Enviar lista de cotización por WhatsApp"
-              className={cn(
-                "flex items-center justify-center gap-2",
-                "w-full min-h-[56px] rounded-xl",
-                "bg-[#25D366] hover:bg-[#1da851]",
-                "text-white font-bold text-base",
-                "transition-all duration-150 shadow-[0_4px_16px_rgba(37,211,102,0.15)] hover:shadow-[0_4px_24px_rgba(37,211,102,0.3)]",
-                "active:scale-[0.98]"
-              )}
-            >
-              <MessageCircle className="w-5 h-5" aria-hidden="true" />
-              Enviar lista por WhatsApp
-            </a>
+            {/* Primary CTAs — WhatsApp Redirection by Branch */}
+            <div className="space-y-2.5">
+              <a
+                href={waUrlCharallave}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Enviar lista de cotización por WhatsApp a Sede Charallave"
+                className={cn(
+                  "flex items-center justify-between px-4",
+                  "w-full min-h-[50px] rounded-xl",
+                  "bg-[#25D366] hover:bg-[#1da851]",
+                  "text-white font-bold text-sm",
+                  "transition-all duration-150 shadow-[0_4px_16px_rgba(37,211,102,0.15)] hover:shadow-[0_4px_24px_rgba(37,211,102,0.3)]",
+                  "active:scale-[0.98]"
+                )}
+              >
+                <div className="flex items-center gap-2">
+                  <MessageCircle className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
+                  <span>Cotizar vía Charallave</span>
+                </div>
+                <span className="text-[11px] font-mono bg-black/20 px-2 py-0.5 rounded text-white/90">
+                  {BUSINESS.branches.charallave.formattedPhone}
+                </span>
+              </a>
+
+              <a
+                href={waUrlCaracas}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Enviar lista de cotización por WhatsApp a Sede Caracas"
+                className={cn(
+                  "flex items-center justify-between px-4",
+                  "w-full min-h-[50px] rounded-xl",
+                  "bg-emerald-700 hover:bg-emerald-600 border border-emerald-500/30",
+                  "text-white font-bold text-sm",
+                  "transition-all duration-150 shadow-[0_4px_16px_rgba(16,185,129,0.15)] hover:shadow-[0_4px_24px_rgba(16,185,129,0.3)]",
+                  "active:scale-[0.98]"
+                )}
+              >
+                <div className="flex items-center gap-2">
+                  <MessageCircle className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
+                  <span>Cotizar vía Caracas</span>
+                </div>
+                <span className="text-[11px] font-mono bg-black/20 px-2 py-0.5 rounded text-white/90">
+                  {BUSINESS.branches.caracas.formattedPhone}
+                </span>
+              </a>
+            </div>
 
             {/* Secondary CTA — close drawer */}
             <button

@@ -1,8 +1,23 @@
 // Business configuration for Automotriz El Shaddai
 export const BUSINESS = {
   name: "Automotriz El Shaddai",
-  phone: "584123715469", // WhatsApp principal de la empresa
-  location: "Charallave, Miranda, Venezuela",
+  phone: "584123715469", // WhatsApp principal (Charallave)
+  phoneCaracas: "584121619480", // WhatsApp Sede Caracas
+  branches: {
+    charallave: {
+      name: "Sede Charallave",
+      phone: "584123715469",
+      formattedPhone: "+58 412-3715469",
+      address: "Diagonal al MRW, Residencias Don Alejandro, Charallave, Miranda",
+    },
+    caracas: {
+      name: "Sede Caracas",
+      phone: "584121619480",
+      formattedPhone: "+58 412-1619480",
+      address: "Caracas, Venezuela",
+    },
+  },
+  location: "Charallave y Caracas, Venezuela",
   address: "Diagonal al MRW, Residencias Don Alejandro, Charallave, Miranda",
   hours: {
     weekdays: "Lun–Vie: 8:00 AM – 6:00 PM",
@@ -11,7 +26,7 @@ export const BUSINESS = {
   },
 } as const
 
-export type BrandId = "chery" | "toyota" | "ford" | "chevrolet" | "volkswagen" | "hyundai" | "daewoo"
+export type BrandId = "chery" | "toyota" | "ford" | "chevrolet" | "volkswagen" | "hyundai" | "daewoo" | "renault" | "jeep"
 
 export interface Brand {
   id: BrandId
@@ -26,6 +41,8 @@ export const BRANDS: Brand[] = [
   { id: "volkswagen", label: "Volkswagen" },
   { id: "hyundai", label: "Hyundai" },
   { id: "daewoo", label: "Daewoo" },
+  { id: "renault", label: "Renault" },
+  { id: "jeep", label: "Jeep" },
 ]
 
 export interface Category {
@@ -73,6 +90,10 @@ export const SAMPLE_PRODUCTS: Product[] = [
   { id: "16", name: "Amortiguador Delantero", brand: "Hyundai", category: "Suspensión", compatibility: "Accent 2012–2018", sku: "HYU-SUS-022" },
   { id: "17", name: "Distribuidor de Encendido", brand: "Daewoo", category: "Eléctrico", compatibility: "Cielo 1.5 1995–2000", sku: "DAE-ELC-001" },
   { id: "18", name: "Pastillas de Freno Delanteras", brand: "Daewoo", category: "Frenos", compatibility: "Lanos / Cielo / Nubira", sku: "DAE-FRN-002" },
+  { id: "19", name: "Bomba de Agua V8 5.3", brand: "Chevrolet", category: "Motor", compatibility: "Silverado 1500 / 2500 / Cheyenne 2007–2018", sku: "CHV-MOT-053" },
+  { id: "20", name: "Kit de Tiempo 1.6 16V", brand: "Renault", category: "Motor", compatibility: "Logan / Clio / Symbol / Megane 2005–2015", sku: "REN-MOT-001" },
+  { id: "21", name: "Pastillas de Freno Heavy Duty", brand: "Jeep", category: "Frenos", compatibility: "Grand Cherokee (WK/WJ) / Liberty (KJ/KK)", sku: "JEP-FRN-001" },
+  { id: "22", name: "Amortiguadores Delanteros Reforzados 4x4", brand: "Jeep", category: "Suspensión", compatibility: "Cherokee Liberty / Grand Cherokee", sku: "JEP-SUS-002" },
 ]
 
 export interface QuoteItem {

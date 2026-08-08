@@ -8,7 +8,7 @@ import { createProduct, updateProduct } from '@/actions/product'
 import type { DbProduct, ProductBrand, ProductCondition } from '@/lib/supabase/types'
 
 const BRANDS: ProductBrand[] = [
-  'Chery', 'Toyota', 'Ford', 'Chevrolet', 'Volkswagen', 'Hyundai', 'Daewoo', 'Universal',
+  'Chery', 'Toyota', 'Ford', 'Chevrolet', 'Volkswagen', 'Hyundai', 'Daewoo', 'Renault', 'Jeep', 'Universal',
 ]
 
 const CONDITIONS: { value: ProductCondition; label: string; desc: string }[] = [
@@ -39,6 +39,7 @@ const VEHICLE_MAKES: Record<string, string[]> = {
     "Terios 1.5 (Daihatsu)"
   ],
   Chevrolet: [
+    "Silverado (Cheyenne / C1500 / C2500 / HD)",
     "Corsa",
     "Aveo",
     "Optra",
@@ -79,6 +80,25 @@ const VEHICLE_MAKES: Record<string, string[]> = {
     "Tiggo 3 2016–2021",
     "Orinoco 1.8",
     "QQ 0.8"
+  ],
+  Renault: [
+    "Logan",
+    "Twingo",
+    "Clio",
+    "Megane",
+    "Symbol",
+    "Duster",
+    "Kangoo",
+    "Scenic"
+  ],
+  Jeep: [
+    "Grand Cherokee (WJ / WK / WK2)",
+    "Cherokee Liberty (KJ / KK)",
+    "Cherokee XJ",
+    "Compass",
+    "Commander",
+    "Wrangler (TJ / JK)",
+    "Renegade"
   ],
   Universal: [
     "Genérico / Todos"

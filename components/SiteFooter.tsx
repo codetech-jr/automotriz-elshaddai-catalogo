@@ -16,18 +16,23 @@ interface SiteFooterProps {
 }
 
 export default function SiteFooter({ settings }: SiteFooterProps) {
-  // Hack: Si el número de Supabase es el de prueba (0000000) o no está configurado, usamos el WhatsApp principal de El Shaddai
-  const phone = settings?.whatsapp_number && !settings.whatsapp_number.includes("0000000")
+  // WhatsApp principal de Charallave
+  const phoneCharallave = settings?.whatsapp_number && !settings.whatsapp_number.includes("0000000")
     ? settings.whatsapp_number
-    : "584123715469";
+    : BUSINESS.branches.charallave.phone;
+
+  // WhatsApp secundario Sede Caracas
+  const phoneCaracas = BUSINESS.branches.caracas.phone;
 
   const address = settings?.store_address || BUSINESS.address
-  const whatsappUrl = buildWhatsAppURL("Hola, quisiera hacer una consulta desde la web.", phone)
+  const whatsappCharallaveUrl = buildWhatsAppURL("Hola, quisiera hacer una consulta para la Sede Charallave desde la web.", phoneCharallave)
+  const whatsappCaracasUrl = buildWhatsAppURL("Hola, quisiera hacer una consulta para la Sede Caracas desde la web.", phoneCaracas)
 
-  // Formato visual amigable para el usuario: +58 412-3715469
-  const formattedPhone = phone.startsWith("+") 
-    ? phone 
-    : `+${phone.slice(0, 2)} ${phone.slice(2, 5)}-${phone.slice(5)}`;
+  const formattedCharallave = phoneCharallave.startsWith("+") 
+    ? phoneCharallave 
+    : `+${phoneCharallave.slice(0, 2)} ${phoneCharallave.slice(2, 5)}-${phoneCharallave.slice(5)}`;
+
+  const formattedCaracas = BUSINESS.branches.caracas.formattedPhone;
 
   return (
     <footer className="relative bg-[#0a0a0a] border-t border-zinc-900 pt-16 pb-8 overflow-hidden max-w-full">
@@ -59,7 +64,7 @@ export default function SiteFooter({ settings }: SiteFooterProps) {
               </div>
             </div>
             <p className="text-zinc-400 text-sm leading-relaxed max-w-xs">
-              Tu aliado estratégico en repuestos para Chery, Toyota, Ford y Chevrolet en los Valles del Tuy. Garantizamos calidad y rapidez.
+              Tu aliado estratégico en repuestos para Chery, Toyota, Ford y Chevrolet en Valles del Tuy y Caracas. Garantizamos calidad y rapidez.
             </p>
             <div className="flex items-center justify-center md:justify-start gap-3 w-full">
               <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Síguenos en Instagram" className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white hover:border-zinc-600 hover:bg-zinc-800 transition-all">
@@ -94,35 +99,55 @@ export default function SiteFooter({ settings }: SiteFooterProps) {
             </ul>
           </div>
 
-          {/* Column 4: Contact & Info */}
+          {/* Column 3: Contact & Info */}
           <div className="flex flex-col items-center md:items-start text-center md:text-left">
             <h3 className="text-white font-bold text-base mb-6 flex items-center justify-center md:justify-start gap-2 w-full">
               <Phone className="w-4 h-4 text-sky-500" />
               Contacto Directo
             </h3>
-            <ul className="space-y-6 md:space-y-4 w-full">
-              <li className="flex flex-col md:flex-row items-center md:items-start justify-center md:justify-start gap-2 md:gap-3 text-sm">
-                <MapPin className="w-5 h-5 text-zinc-500 flex-shrink-0 md:mt-0.5" />
-                <span className="text-zinc-400 leading-relaxed max-w-[260px] md:max-w-none text-center md:text-left">
-                  {address}
+            <ul className="space-y-4 w-full">
+              {/* Sede Charallave */}
+              <li className="space-y-1 bg-zinc-900/40 p-3 rounded-xl border border-zinc-850/60">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 block text-center md:text-left">
+                  📍 Sede Charallave (Principal)
                 </span>
-              </li>
-              <li>
-                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="flex flex-col md:flex-row items-center justify-center md:justify-start gap-2 md:gap-3 text-sm group">
-                  <div className="w-8 h-8 rounded-full bg-[#25D366]/10 flex items-center justify-center text-[#25D366] group-hover:bg-[#25D366]/20 transition-colors">
-                    <Phone className="w-4 h-4" />
+                <div className="flex items-center justify-center md:justify-start gap-2 text-xs text-zinc-400">
+                  <MapPin className="w-3.5 h-3.5 text-zinc-500 flex-shrink-0" />
+                  <span className="truncate">{address}</span>
+                </div>
+                <a href={whatsappCharallaveUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center md:justify-start gap-2 text-xs group pt-1">
+                  <div className="w-6 h-6 rounded-full bg-[#25D366]/10 flex items-center justify-center text-[#25D366] group-hover:bg-[#25D366]/20 transition-colors">
+                    <Phone className="w-3 h-3" />
                   </div>
-                  <span className="text-zinc-400 group-hover:text-white transition-colors text-center md:text-left md:mt-1.5">
-                    {formattedPhone}
+                  <span className="text-zinc-300 group-hover:text-white font-mono font-semibold transition-colors">
+                    {formattedCharallave}
                   </span>
                 </a>
               </li>
-              <li>
-                <div className="flex flex-col md:flex-row items-center justify-center md:justify-start gap-2 md:gap-3 text-sm md:mt-2">
-                  <CreditCard className="w-5 h-5 text-zinc-500 flex-shrink-0" />
-                  <span className="text-zinc-400 text-center md:text-left">
-                    Pago Móvil, Zelle, Efectivo, Punto
+
+              {/* Sede Caracas */}
+              <li className="space-y-1 bg-zinc-900/40 p-3 rounded-xl border border-zinc-850/60">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block text-center md:text-left">
+                  📍 Sede Caracas (Atención Comercial)
+                </span>
+                <div className="flex items-center justify-center md:justify-start gap-2 text-xs text-zinc-400">
+                  <MapPin className="w-3.5 h-3.5 text-zinc-500 flex-shrink-0" />
+                  <span>Caracas, Venezuela</span>
+                </div>
+                <a href={whatsappCaracasUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center md:justify-start gap-2 text-xs group pt-1">
+                  <div className="w-6 h-6 rounded-full bg-[#25D366]/10 flex items-center justify-center text-[#25D366] group-hover:bg-[#25D366]/20 transition-colors">
+                    <Phone className="w-3 h-3" />
+                  </div>
+                  <span className="text-zinc-300 group-hover:text-white font-mono font-semibold transition-colors">
+                    {formattedCaracas}
                   </span>
+                </a>
+              </li>
+
+              <li>
+                <div className="flex flex-col md:flex-row items-center justify-center md:justify-start gap-2 text-xs text-zinc-400 pt-1">
+                  <CreditCard className="w-4 h-4 text-zinc-500 flex-shrink-0" />
+                  <span>Pago Móvil, Zelle, Efectivo, Punto</span>
                 </div>
               </li>
             </ul>

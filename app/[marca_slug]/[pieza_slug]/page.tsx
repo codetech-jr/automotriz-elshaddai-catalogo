@@ -14,7 +14,7 @@ import {
 
 // ─── 1. INTERFACES DE TYPESCRIPT CON TIPADO ESTRICTO DE MARCAS ───────────────
 
-export type MarcaSlug = "toyota" | "chery" | "ford" | "chevrolet" | "hyundai" | "volkswagen" | "daewoo";
+export type MarcaSlug = "toyota" | "chery" | "ford" | "chevrolet" | "hyundai" | "volkswagen" | "daewoo" | "renault" | "jeep";
 
 export interface Repuesto {
   id: string;
@@ -30,7 +30,7 @@ export interface Repuesto {
 }
 
 export function isValidMarcaSlug(slug: string): slug is MarcaSlug {
-  const marcasValidas: MarcaSlug[] = ["toyota", "chery", "ford", "chevrolet", "hyundai", "volkswagen", "daewoo"];
+  const marcasValidas: MarcaSlug[] = ["toyota", "chery", "ford", "chevrolet", "hyundai", "volkswagen", "daewoo", "renault", "jeep"];
   return marcasValidas.includes(slug as MarcaSlug);
 }
 
@@ -73,6 +73,7 @@ export async function getRepuesto(marcaSlug: string, piezaSlug: string): Promise
 
       case "chevrolet":
         modelos = [
+          "Silverado (Cheyenne, C1500, C2500, HD)",
           "Corsa 1.4 / 1.6",
           "Aveo (Speed, LT, 3 Puertas)",
           "Optra (Design, Limited, Advance)",
@@ -84,7 +85,7 @@ export async function getRepuesto(marcaSlug: string, piezaSlug: string): Promise
         nombrePiezaBase = piezaSlug.includes("tripoide") 
           ? "Tripoides Chevrolet Completos" 
           : piezaSlug.includes("pastillas") 
-          ? "Pastillas de Freno Delanteras Aveo/Corsa" 
+          ? "Pastillas de Freno Delanteras Aveo/Corsa/Silverado" 
           : "Estopera de Cigüeñal Chevrolet";
         break;
 
@@ -150,6 +151,41 @@ export async function getRepuesto(marcaSlug: string, piezaSlug: string): Promise
           : piezaSlug.includes("tripoide")
           ? "Tripoides Daewoo Lanos"
           : "Estopera de Árbol de Levas Daewoo";
+        break;
+
+      case "renault":
+        modelos = [
+          "Logan 1.4 / 1.6",
+          "Twingo 8V / 16V",
+          "Clio 1.6 (Energy, Dynamique)",
+          "Megane I / II",
+          "Symbol 1.6",
+          "Duster 1.6 / 2.0",
+          "Kangoo 1.6",
+          "Scenic 2.0"
+        ];
+        nombrePiezaBase = piezaSlug.includes("correa") 
+          ? "Kit de Tiempo Renault 16V (Logan/Clio/Symbol)" 
+          : piezaSlug.includes("pastillas") 
+          ? "Pastillas de Freno Renault Logan/Clio" 
+          : "Bomba de Agua Renault Logan 1.6";
+        break;
+
+      case "jeep":
+        modelos = [
+          "Grand Cherokee (WJ / WK / WK2)",
+          "Cherokee Liberty (KJ / KK)",
+          "Cherokee XJ 4.0",
+          "Compass 2.4",
+          "Commander 4.7/5.7",
+          "Wrangler (TJ / JK)",
+          "Renegade 1.8"
+        ];
+        nombrePiezaBase = piezaSlug.includes("tripoide")
+          ? "Tripoide / Muñón Jeep 4x4"
+          : piezaSlug.includes("pastillas")
+          ? "Pastillas de Freno Heavy Duty Jeep Grand Cherokee"
+          : "Amortiguador Reforzado Jeep 4x4";
         break;
 
       default:

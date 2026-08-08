@@ -23,6 +23,8 @@ export type ProductBrand =
   | 'Volkswagen'
   | 'Hyundai'
   | 'Daewoo'
+  | 'Renault'
+  | 'Jeep'
   | 'Universal'
 
 export interface DbProduct {
