@@ -59,7 +59,7 @@ export default function SiteFooter({ settings }: SiteFooterProps) {
                   El Shaddai
                 </span>
                 <span className="text-[10px] text-zinc-500 font-mono tracking-widest leading-none mt-1 uppercase">
-                  Automotriz
+                  Automotriz · RIF: {BUSINESS.rif}
                 </span>
               </div>
             </div>
@@ -158,7 +158,7 @@ export default function SiteFooter({ settings }: SiteFooterProps) {
         {/* Bottom Copyright Bar */}
         <div className="pt-8 border-t border-zinc-800/60 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-zinc-500 text-xs text-center md:text-left">
-            © {new Date().getFullYear()} Automotriz El Shaddai. Todos los derechos reservados.
+            © {new Date().getFullYear()} Automotriz El Shaddai C.A. · RIF: {BUSINESS.rif}. Todos los derechos reservados.
           </p>
           <div className="flex items-center gap-2">
             <span className="text-[10px] uppercase tracking-wider text-zinc-600 font-bold bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded-full">

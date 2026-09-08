@@ -1,6 +1,7 @@
 // Business configuration for Automotriz El Shaddai
 export const BUSINESS = {
   name: "Automotriz El Shaddai",
+  rif: "J-501718474",
   phone: "584123715469", // WhatsApp principal (Charallave)
   phoneCaracas: "584121619480", // WhatsApp Sede Caracas
   branches: {
