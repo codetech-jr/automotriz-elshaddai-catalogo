@@ -37,7 +37,10 @@ export function isValidMarcaSlug(slug: string): slug is MarcaSlug {
 // ─── 2. FUNCIÓN DE LECTURA DE BASE DE DATOS (MOCK SIMULADO DE SUPABASE) ────────
 export async function getRepuesto(marcaSlug: string, piezaSlug: string): Promise<Repuesto | null> {
   try {
-    if (!isValidMarcaSlug(marcaSlug)) {
+    const cleanMarca = decodeURIComponent(marcaSlug || "").toLowerCase();
+    const cleanPieza = decodeURIComponent(piezaSlug || "").toLowerCase();
+
+    if (!isValidMarcaSlug(cleanMarca)) {
       return null;
     }
 
@@ -211,14 +214,16 @@ export async function getRepuesto(marcaSlug: string, piezaSlug: string): Promise
 
 // ─── 3. PARÁMETROS DE LA RUTA Y GENERATEMETADATA (SEO SSR) ────────────────────
 interface PageProps {
-  params: {
+  params: Promise<{
     marca_slug: string;
     pieza_slug: string;
-  };
+  }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { marca_slug, pieza_slug } = params;
+  const { marca_slug: rawMarcaSlug, pieza_slug: rawPiezaSlug } = await params;
+  const marca_slug = decodeURIComponent(rawMarcaSlug || "").toLowerCase();
+  const pieza_slug = decodeURIComponent(rawPiezaSlug || "").toLowerCase();
   const repuesto = await getRepuesto(marca_slug, pieza_slug);
 
   if (!repuesto) {
@@ -260,7 +265,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 // ─── 4. COMPONENTE PRINCIPAL DE LA PÁGINA (SSR SERVER COMPONENT) ──────────────
 export default async function ProductPage({ params }: PageProps) {
-  const { marca_slug, pieza_slug } = params;
+  const { marca_slug: rawMarcaSlug, pieza_slug: rawPiezaSlug } = await params;
+  const marca_slug = decodeURIComponent(rawMarcaSlug || "").toLowerCase();
+  const pieza_slug = decodeURIComponent(rawPiezaSlug || "").toLowerCase();
   const repuesto = await getRepuesto(marca_slug, pieza_slug);
 
   if (!repuesto) {

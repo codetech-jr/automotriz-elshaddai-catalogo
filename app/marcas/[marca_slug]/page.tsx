@@ -274,13 +274,14 @@ async function getRepuestosPorMarca(marcaSlug: string): Promise<RepuestoResumen[
 
 // ─── 3. METADATA DINÁMICA & OPENGRAPH (generateMetadata) ─────────────────────
 interface PageProps {
-  params: {
+  params: Promise<{
     marca_slug: string;
-  };
+  }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { marca_slug } = params;
+  const { marca_slug: rawMarcaSlug } = await params;
+  const marca_slug = decodeURIComponent(rawMarcaSlug || "").toLowerCase();
   
   if (!isValidMarcaSlug(marca_slug)) {
     return {
@@ -310,7 +311,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 // ─── 4. COMPONENTE PRINCIPAL (SERVER SIDE RENDERING) ──────────────────────────
 export default async function BrandLanding({ params }: PageProps) {
-  const { marca_slug } = params;
+  const { marca_slug: rawMarcaSlug } = await params;
+  const marca_slug = decodeURIComponent(rawMarcaSlug || "").toLowerCase();
 
   if (!isValidMarcaSlug(marca_slug)) {
     notFound();
