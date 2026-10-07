@@ -272,15 +272,35 @@ async function getRepuestosPorMarca(marcaSlug: string): Promise<RepuestoResumen[
   return catalogoCompleto[marcaSlug] || [];
 }
 
-// ─── 3. METADATA DINÁMICA & OPENGRAPH (generateMetadata) ─────────────────────
+// ─── 3. GENERACIÓN ESTÁTICA Y METADATA (SSG & SEO) ───────────────────────────
+export function generateStaticParams() {
+  const marcas: MarcaSlug[] = [
+    "toyota",
+    "chery",
+    "ford",
+    "chevrolet",
+    "hyundai",
+    "volkswagen",
+    "daewoo",
+    "renault",
+    "jeep",
+  ];
+  return marcas.map((marca_slug) => ({
+    marca_slug,
+  }));
+}
+
 interface PageProps {
   params: Promise<{
     marca_slug: string;
-  }>;
+  }> | {
+    marca_slug: string;
+  };
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { marca_slug: rawMarcaSlug } = await params;
+  const resolvedParams = await Promise.resolve(params);
+  const rawMarcaSlug = resolvedParams?.marca_slug;
   const marca_slug = decodeURIComponent(rawMarcaSlug || "").toLowerCase();
   
   if (!isValidMarcaSlug(marca_slug)) {
@@ -311,7 +331,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 // ─── 4. COMPONENTE PRINCIPAL (SERVER SIDE RENDERING) ──────────────────────────
 export default async function BrandLanding({ params }: PageProps) {
-  const { marca_slug: rawMarcaSlug } = await params;
+  const resolvedParams = await Promise.resolve(params);
+  const rawMarcaSlug = resolvedParams?.marca_slug;
   const marca_slug = decodeURIComponent(rawMarcaSlug || "").toLowerCase();
 
   if (!isValidMarcaSlug(marca_slug)) {

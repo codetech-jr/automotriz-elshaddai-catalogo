@@ -212,16 +212,48 @@ export async function getRepuesto(marcaSlug: string, piezaSlug: string): Promise
   }
 }
 
-// ─── 3. PARÁMETROS DE LA RUTA Y GENERATEMETADATA (SEO SSR) ────────────────────
+// ─── 3. GENERACIÓN ESTÁTICA Y METADATA (SSG & SEO) ───────────────────────────
+export function generateStaticParams() {
+  return [
+    { marca_slug: "toyota", pieza_slug: "tripoides-corolla-irani" },
+    { marca_slug: "toyota", pieza_slug: "pastillas-freno-corolla" },
+    { marca_slug: "toyota", pieza_slug: "correa-unica-hilux" },
+    { marca_slug: "chevrolet", pieza_slug: "tripoides-aveo" },
+    { marca_slug: "chevrolet", pieza_slug: "pastillas-freno-corsa" },
+    { marca_slug: "chevrolet", pieza_slug: "estopera-cigueñal-optra" },
+    { marca_slug: "chevrolet", pieza_slug: "estopera-cigueñal-aveo" },
+    { marca_slug: "chevrolet", pieza_slug: "bomba-agua-silverado" },
+    { marca_slug: "ford", pieza_slug: "bomba-agua-fiesta" },
+    { marca_slug: "ford", pieza_slug: "amortiguador-explorer" },
+    { marca_slug: "chery", pieza_slug: "correa-tiempo-orinoco" },
+    { marca_slug: "chery", pieza_slug: "bujias-tiggo" },
+    { marca_slug: "hyundai", pieza_slug: "correa-tiempo-getz" },
+    { marca_slug: "hyundai", pieza_slug: "pastillas-freno-accent" },
+    { marca_slug: "volkswagen", pieza_slug: "tripoide-gol" },
+    { marca_slug: "volkswagen", pieza_slug: "filtro-aceite-gol" },
+    { marca_slug: "daewoo", pieza_slug: "pastillas-freno-cielo" },
+    { marca_slug: "daewoo", pieza_slug: "tripoides-lanos" },
+    { marca_slug: "renault", pieza_slug: "kit-tiempo-logan" },
+    { marca_slug: "renault", pieza_slug: "pastillas-freno-logan" },
+    { marca_slug: "jeep", pieza_slug: "pastillas-freno-grand-cherokee" },
+    { marca_slug: "jeep", pieza_slug: "amortiguadores-jeep-liberty" },
+  ];
+}
+
 interface PageProps {
   params: Promise<{
     marca_slug: string;
     pieza_slug: string;
-  }>;
+  }> | {
+    marca_slug: string;
+    pieza_slug: string;
+  };
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { marca_slug: rawMarcaSlug, pieza_slug: rawPiezaSlug } = await params;
+  const resolvedParams = await Promise.resolve(params);
+  const rawMarcaSlug = resolvedParams?.marca_slug;
+  const rawPiezaSlug = resolvedParams?.pieza_slug;
   const marca_slug = decodeURIComponent(rawMarcaSlug || "").toLowerCase();
   const pieza_slug = decodeURIComponent(rawPiezaSlug || "").toLowerCase();
   const repuesto = await getRepuesto(marca_slug, pieza_slug);
@@ -265,7 +297,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 // ─── 4. COMPONENTE PRINCIPAL DE LA PÁGINA (SSR SERVER COMPONENT) ──────────────
 export default async function ProductPage({ params }: PageProps) {
-  const { marca_slug: rawMarcaSlug, pieza_slug: rawPiezaSlug } = await params;
+  const resolvedParams = await Promise.resolve(params);
+  const rawMarcaSlug = resolvedParams?.marca_slug;
+  const rawPiezaSlug = resolvedParams?.pieza_slug;
   const marca_slug = decodeURIComponent(rawMarcaSlug || "").toLowerCase();
   const pieza_slug = decodeURIComponent(rawPiezaSlug || "").toLowerCase();
   const repuesto = await getRepuesto(marca_slug, pieza_slug);
